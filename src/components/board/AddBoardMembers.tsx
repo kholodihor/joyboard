@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -12,13 +14,15 @@ const AddBoardMembers = ({ board }: { board: Board }) => {
   const router = useRouter();
   const [members, setMembers] = useState<any>();
 
+  const getMembers = async () => {
+    const getUsers = await getWithoutBoardMembers({ board });
+    setMembers(getUsers?.result);
+  };
+
   useEffect(() => {
-    const getMembers = async () => {
-      const getUsers = await getWithoutBoardMembers({ board });
-      setMembers(getUsers?.result);
-    };
-    if (board) getMembers();
-  }, [board]);
+    if (!board) return;
+    getMembers();
+  }, []);
 
   const addMembers = async (user: User) => {
     user?.boardIds?.push(board.id);

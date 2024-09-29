@@ -34,7 +34,7 @@ const CreateBoardPopup = () => {
       <PopoverTrigger>
         <div
           role="button"
-          className="h-24 w-40 p-3 aspect-video relative bg-muted rounded-sm flex flex-col gap-y-1 items-center justify-center hover:opacity-75 transition"
+          className="w-60 p-3 aspect-video relative bg-muted rounded-sm flex flex-col gap-y-1 items-center justify-center hover:opacity-75 transition border-2 border-pink-300"
         >
           <p className="text-sm">Create new board</p>
           <p className="text-xs">Unlimited</p>

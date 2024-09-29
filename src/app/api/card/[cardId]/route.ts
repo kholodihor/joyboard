@@ -22,6 +22,6 @@ export const GET = async (
 
     return NextResponse.json(card);
   } catch (error) {
-    return new NextResponse("Internat server error", { status: 500 });
+    return new NextResponse("Internal server error", { status: 500 });
   }
 };

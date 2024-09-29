@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -67,11 +68,10 @@ const CardDate = ({ cardData }: CardProps) => {
       <input
         type="checkbox"
         checked={isCompleted}
-        onChange={() => setIsCompleted(!isCompleted)}
+        onChange={() => setIsCompleted((prev) => !prev)}
         className="cursor-pointer"
       />
       {formatDate(cardData?.dateTo as string)}
-      {isCompleted}
     </div>
   );
 };

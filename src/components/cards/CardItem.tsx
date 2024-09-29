@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { Card, User } from "@/interfaces";
 import { Draggable } from "@hello-pangea/dnd";
