@@ -1,5 +1,5 @@
 "use client";
-import { Card, LabelData } from "@/interfaces";
+import { Card, LabelData } from "@/types";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Button } from "../ui/button";
 import { updateCardLabel } from "@/app/actions/card";

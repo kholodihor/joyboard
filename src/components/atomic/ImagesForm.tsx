@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { defaultImages } from "@/constants/images";
 import { Check } from "lucide-react";
-import type { TImage } from "@/interfaces";
+import type { TImage } from "@/types";
 
 const ImagesForm = ({ name }: { name: string }) => {
   const [imageId, setImageId] = useState("");

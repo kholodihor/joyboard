@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Users2 } from "lucide-react";
 import CreateBoardPopup from "./CreateBoardPopup";
-import { Board } from "@/interfaces";
+import { Board } from "@/types";
 import { getAllBoards } from "@/app/actions/board";
 
 const BoardList = async () => {

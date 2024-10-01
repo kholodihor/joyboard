@@ -1,8 +1,7 @@
-import React from "react";
-import InputForm from "../atomic/InputForm";
 import { useParams } from "next/navigation";
 import { updateCard } from "@/app/actions/card";
 import { toast } from "sonner";
+import InputForm from "../atomic/InputForm";
 
 interface CardDetails {
   cardData: any;

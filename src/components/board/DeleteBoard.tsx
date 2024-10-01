@@ -14,7 +14,7 @@ import { Button } from "../ui/button";
 import { MoreHorizontal } from "lucide-react";
 import { toast } from "sonner";
 import { deleteBoard } from "@/app/actions/board";
-import { Board } from "@/interfaces";
+import { Board } from "@/types";
 
 const DeleteBoard = ({ board }: { board: Board }) => {
   const handleDelete = async () => {

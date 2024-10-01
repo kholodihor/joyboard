@@ -6,7 +6,7 @@ import { Button } from "../ui/button";
 import { Plus, X } from "lucide-react";
 import TextAreaForm from "../atomic/TextAreaForm";
 import { useParams } from "next/navigation";
-import { cardCreate } from "@/app/actions/card";
+import { createCard } from "@/app/actions/card";
 
 const CreateCard = ({ listId }: { listId: string }) => {
   const formRef = useRef<HTMLFormElement>(null);
@@ -22,7 +22,7 @@ const CreateCard = ({ listId }: { listId: string }) => {
         toast.error("please add list title");
         return;
       }
-      const res = await cardCreate({ title, listId, boardId });
+      const res = await createCard({ title, listId, boardId });
       if (res?.result) {
         toast.success("Card successfully added");
       }

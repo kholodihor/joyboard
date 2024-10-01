@@ -101,7 +101,7 @@ model Card {
 
   label     String[]
   comments  Comment[]
-  dateTo    DateTime
+  dateTo    DateTime?
   isCompleted Boolean @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

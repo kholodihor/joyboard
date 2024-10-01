@@ -1,4 +1,4 @@
-import { Card, List } from "@/interfaces";
+import { Card, List } from "@/types";
 import ListHeader from "./ListHeader";
 import { Draggable, Droppable } from "@hello-pangea/dnd";
 import { cn } from "@/lib/utils";

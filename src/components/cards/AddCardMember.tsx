@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Card, User } from "@/interfaces";
+import { Card, User } from "@/types";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Button } from "../ui/button";
 import { addCardMember, getNoCardMembers } from "@/app/actions/card";

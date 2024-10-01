@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import TextAreaForm from "../atomic/TextAreaForm";
 import FormSubmit from "../atomic/FormSubmit";
 import { Button } from "../ui/button";
-import { Comment } from "@/interfaces";
+import { Comment } from "@/types";
 import { useSession } from "next-auth/react";
 import { getMembersOfBoard } from "@/app/actions/board";
 import Image from "next/image";

@@ -1,6 +1,6 @@
 "use client";
 
-import { Card } from "@/interfaces";
+import { Card } from "@/types";
 import { Button } from "../ui/button";
 import { CardCopy, CardDelete } from "@/app/actions/card";
 import { useParams } from "next/navigation";

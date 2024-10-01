@@ -6,7 +6,7 @@ import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
 import CardDescription from "./CardDescription";
 import CardActions from "./CardActions";
-import { User } from "@/interfaces";
+import { User } from "@/types";
 import { addCardMember } from "@/app/actions/card";
 import { labels } from "@/constants/labels";
 import CardCommentsInput from "./CardCommentsInput";
@@ -82,7 +82,9 @@ const CardModal = ({ id, isModal, setIsModal }: CardModel) => {
                     </div>
                   ))}
                 </div>
-                <CardDate cardData={cardData} boardId={boardId} />
+                {cardData && cardData.dateTo ? (
+                  <CardDate cardData={cardData} boardId={boardId} />
+                ) : null}
               </div>
 
               <div className="mt-10">

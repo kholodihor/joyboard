@@ -1,4 +1,5 @@
-import { Board, User } from "@/interfaces";
+import Image from "next/image";
+import { Board, User } from "@/types";
 import DeleteBoard from "./DeleteBoard";
 import AddBoardMembers from "./AddBoardMembers";
 
@@ -8,9 +9,11 @@ const BoardNavbar = async ({ board }: { board: Board }) => {
       <h2 className="text-xl font-bold text-white">{board?.title}</h2>
       <div className="flex items-center gap-5">
         {board?.Users?.map((user: User) => (
-          <img
+          <Image
             src={user?.image || "/logo.jpg"}
             className="h-7 w-7 rounded-full cursor-pointer"
+            width={30}
+            height={30}
             alt={user.name}
             key={user?.id}
           />

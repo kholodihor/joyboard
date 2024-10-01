@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { Card, User } from "@/interfaces";
+import { Card, User } from "@/types";
 import { Draggable } from "@hello-pangea/dnd";
 import React, { useState } from "react";
 import CardModal from "./CardModal";
@@ -61,7 +61,9 @@ const CardItem = ({ card, index }: { card: Card; index: number }) => {
                   onMouseEnter={() => setIsModalAllowed(false)}
                   onMouseLeave={() => setIsModalAllowed(true)}
                 >
-                  <CardDate cardData={card} boardId={boardId} />
+                  {card && card.dateTo ? (
+                    <CardDate cardData={card} boardId={boardId} />
+                  ) : null}
                 </div>
               </div>
               {card?.users?.slice(0, 2).map((user: User) => (

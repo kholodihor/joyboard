@@ -4,7 +4,7 @@
 import { getAuthSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { Board, User } from "@/interfaces";
+import { Board, User } from "@/types";
 
 export const getAllBoards = async () => {
   const session = await getAuthSession();
@@ -71,7 +71,7 @@ export const deleteBoard = async ({ id }: { id: string }) => {
 };
 
 // get member without current board
-export const getWithoutBoardMembers = async (data: { board: any }) => {
+export const getNoBoardMembers = async (data: { board: any }) => {
   const session = await getAuthSession();
   if (!session) {
     return {

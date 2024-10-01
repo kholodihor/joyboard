@@ -5,9 +5,9 @@ import { getAuthSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { Card, UpdateCard, User } from "@/interfaces";
+import { Card, UpdateCard, User } from "@/types";
 
-export const cardCreate = async (data: {
+export const createCard = async (data: {
   title: string;
   listId: string;
   boardId: string;
@@ -47,7 +47,7 @@ export const cardCreate = async (data: {
         order,
         label: [],
         comments: [],
-        dateTo: new Date(Date.now()),
+        dateTo: null,
       },
     });
   } catch (error) {
@@ -116,7 +116,7 @@ export const CardCopy = async (data: { id: string; boardId: string }) => {
         description: getCard?.description,
         label: [],
         comments: [],
-        dateTo: "",
+        dateTo: null,
         listId: getCard.listId,
         boardId,
         order,

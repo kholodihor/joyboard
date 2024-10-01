@@ -1,13 +1,11 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Board, User } from "@/interfaces";
+import { Board, User } from "@/types";
 import { Popover, PopoverContent } from "../ui/popover";
 import { PopoverTrigger } from "@radix-ui/react-popover";
-import { addMemberInBoard, getWithoutBoardMembers } from "@/app/actions/board";
+import { addMemberInBoard, getNoBoardMembers } from "@/app/actions/board";
 import Image from "next/image";
 
 const AddBoardMembers = ({ board }: { board: Board }) => {
@@ -15,7 +13,7 @@ const AddBoardMembers = ({ board }: { board: Board }) => {
   const [members, setMembers] = useState<any>();
 
   const getMembers = async () => {
-    const getUsers = await getWithoutBoardMembers({ board });
+    const getUsers = await getNoBoardMembers({ board });
     setMembers(getUsers?.result);
   };
 

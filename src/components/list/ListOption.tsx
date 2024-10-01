@@ -1,5 +1,5 @@
 "use client";
-import { List } from "@/interfaces";
+import { List } from "@/types";
 import React from "react";
 import {
   Popover,

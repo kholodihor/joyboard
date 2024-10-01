@@ -1,6 +1,6 @@
 "use client";
 
-import { List } from "@/interfaces";
+import { List } from "@/types";
 import React, { useEffect, useState } from "react";
 import { DragDropContext, Droppable } from "@hello-pangea/dnd";
 import ListItem from "./ListItem";

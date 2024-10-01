@@ -1,5 +1,7 @@
 "use client";
+
 import { signOut, useSession } from "next-auth/react";
+import Image from "next/image";
 import Link from "next/link";
 
 const Navbar = () => {
@@ -8,7 +10,13 @@ const Navbar = () => {
     <header className="bg-[url(/header-bg.jpg)] shadow">
       <nav className="mx-auto flex max-w-7xl items-center justify-between p-4 lg:px-8">
         <Link href="/" className="-m-1.5 p-1.5 flex items-center gap-2">
-          <img src="/logo.jpg" className="h-10 w-auto" alt="" />
+          <Image
+            src="/logo.jpg"
+            className="h-10 w-auto"
+            alt="joyboard logo"
+            width={30}
+            height={30}
+          />
           <span className="font-bold text-xl">JoyBoard</span>
         </Link>
 
