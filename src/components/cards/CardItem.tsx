@@ -36,7 +36,7 @@ const CardItem = ({ card, index }: { card: Card; index: number }) => {
             ref={provided.innerRef}
             onClick={handleModal}
             role="button"
-            className="truncate py-2 px-3 text-sm rounded-md bg-white shadow-md font-bold"
+            className="py-2 px-3 text-sm rounded-md bg-white shadow-md font-bold overflow-x-hidden"
           >
             <div className="mb-2 flex justify-start gap-2">
               {card?.label?.map((item: any) => (

@@ -1,10 +1,10 @@
+import Header from "@/components/common/Header";
 import Footer from "@/components/common/Footer";
-import Navbar from "@/components/common/Navbar";
 
 const BoardLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <div>
-      <Navbar />
+      <Header />
       {children}
       <Footer />
     </div>

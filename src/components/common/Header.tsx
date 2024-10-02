@@ -4,7 +4,7 @@ import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 
-const Navbar = () => {
+const Header = () => {
   const { status } = useSession();
   return (
     <header className="bg-[url(/header-bg.jpg)] shadow">
@@ -51,4 +51,4 @@ const Navbar = () => {
   );
 };
 
-export default Navbar;
+export default Header;
