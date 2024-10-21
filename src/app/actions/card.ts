@@ -47,6 +47,7 @@ export const createCard = async (data: {
         order,
         label: [],
         comments: [],
+        trackedTimes: [],
         dateTo: null,
       },
     });
@@ -116,6 +117,7 @@ export const CardCopy = async (data: { id: string; boardId: string }) => {
         description: getCard?.description,
         label: [],
         comments: [],
+        trackedTimes: [],
         dateTo: null,
         listId: getCard.listId,
         boardId,
@@ -373,4 +375,37 @@ export const reorderCard = async (data: { items: any; boardId: string }) => {
 
   revalidatePath(`/board/${boardId}`);
   return { result: cards };
+};
+
+//tracked time
+export const updateCardTrackedTimes = async (data: { card: Card }) => {
+  const session: any = await getAuthSession();
+
+  if (!session) {
+    return {
+      error: "unauthorized",
+    };
+  }
+
+  const { card } = data;
+  let updatedCard;
+
+  try {
+    [updatedCard] = await prisma.$transaction([
+      prisma.card.update({
+        where: { id: card.id },
+        data: {
+          trackedTimes: card.trackedTimes,
+        },
+      }),
+    ]);
+  } catch (error) {
+    console.error("Error updating card tracked times:", error);
+    return {
+      error: "Failed to update card tracked times",
+    };
+  }
+
+  revalidatePath(`/`);
+  return { result: { updatedCard } };
 };

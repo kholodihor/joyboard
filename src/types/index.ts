@@ -43,6 +43,7 @@ export type Card = {
   dateTo: string | Date;
   isCompleted: boolean;
   comments: Comment[];
+  trackedTimes: string[];
   createdAt: Date;
   updatedAt: Date;
 };
