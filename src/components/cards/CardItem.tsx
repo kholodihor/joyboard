@@ -66,7 +66,8 @@ const CardItem = ({ card, index }: { card: Card; index: number }) => {
                   ) : null}
                 </div>
               </div>
-              {card?.users?.slice(0, 2).map((user: User) => (
+       <div className="flex gap-[5px]">
+       {card?.users?.slice(0, 2).map((user: User) => (
                 <div className="" key={user.id}>
                   <Image
                     src={user?.image || "/logo.jpg"}
@@ -78,6 +79,7 @@ const CardItem = ({ card, index }: { card: Card; index: number }) => {
                 </div>
               ))}
               {card?.users && card?.users?.length > 2 && <span>...</span>}
+       </div>
             </div>
           </div>
         )}
