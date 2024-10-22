@@ -12,7 +12,7 @@ const ListItem = ({ list, index }: { list: List; index: number }) => {
         <li
           {...provided.draggableProps}
           ref={provided.innerRef}
-          className="shrink-0 h-full w-[272px] rounded-md select-none max-h-[70vh] no-scrollbar"
+          className="shrink-0 h-full w-[272px] rounded-md select-none max-h-[77vh] overflow-auto no-scrollbar"
         >
           <div
             {...provided.dragHandleProps}

@@ -13,7 +13,6 @@ import CardCommentsInput from "./CardCommentsInput";
 import { useParams } from "next/navigation";
 import CardDate from "./CardDate";
 import { Skeleton } from "@/components/ui/skeleton";
-import TimeTracker from "./TimeTracker";
 
 interface CardModel {
   id: string;
@@ -88,9 +87,7 @@ const CardModal = ({ id, isModal, setIsModal }: CardModel) => {
                 ) : null}
               </div>
               <div>
-              {cardData ? (
-                  <TimeTracker cardData={cardData} />
-                ) : null}
+            
               </div>
 
               <div className="mt-10">

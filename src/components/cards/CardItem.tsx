@@ -9,6 +9,7 @@ import { FiMessageCircle } from "react-icons/fi";
 import Image from "next/image";
 import CardDate from "./CardDate";
 import { useParams } from "next/navigation";
+import TimeTracker from "./TimeTracker";
 
 const getColor = (id: string) => {
   const foundLabel = labels.find((label) => label.id === id);
@@ -80,6 +81,12 @@ const CardItem = ({ card, index }: { card: Card; index: number }) => {
               ))}
               {card?.users && card?.users?.length > 2 && <span>...</span>}
        </div>
+            </div>
+            <div   onMouseEnter={() => setIsModalAllowed(false)}
+                  onMouseLeave={() => setIsModalAllowed(true)}>
+                {card ? (
+                  <TimeTracker cardData={card} />
+                ) : null}
             </div>
           </div>
         )}

@@ -99,7 +99,7 @@ const ListContainer = ({ boardId, list }: ListProps) => {
           <ol
             {...provided.droppableProps}
             ref={provided.innerRef}
-            className="flex gap-x-3 h-full min-h-[80vh] w-full"
+            className="flex gap-x-3 h-full min-h-[75vh] w-full"
           >
             {listData?.map((list: List, index: number) => (
               <ListItem key={list.id} list={list} index={index} />

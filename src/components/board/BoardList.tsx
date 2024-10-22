@@ -10,18 +10,18 @@ const BoardList = async () => {
     <div>
       <div className="flex items-center font-bold text-lg border-b-4 border-b-black bg-white/30 backdrop-blur-sm w-60 mb-2">
         <Users2 className="h-6 w-6 mr-2" />
-        Your Boards
+        All Boards
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
         {boards?.boards?.map((board: Board) => (
           <Link
             key={board.id}
             href={`/board/${board.id}`}
-            className="group aspect-video relative bg-no-repeat bg-center bg-cover w-60 p-2 overflow-hidden"
+            className="group aspect-video relative bg-no-repeat bg-center bg-cover w-60 p-2 overflow-hidden flex justify-center items-center"
             style={{ backgroundImage: `url(${board.image})` }}
           >
             <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition" />
-            <p className="relative font-medium text-white text-center">
+            <p className="relative font-medium text-white text-center text-xl">
               {board.title}
             </p>
           </Link>
