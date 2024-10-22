@@ -17,11 +17,25 @@ export default function TimeTracker({ cardData }: TimeTrackerProps) {
   const [trackedTimes, setTrackedTimes] = useState<string[]>(cardData.trackedTimes || [])
 
   useEffect(() => {
+    const storedIsTracking = localStorage.getItem(`timeTracker_${cardData.id}_isTracking`)
+    const storedStartTime = localStorage.getItem(`timeTracker_${cardData.id}_startTime`)
+
+    if (storedIsTracking === 'true' && storedStartTime) {
+      setIsTracking(true)
+      const startTime = parseInt(storedStartTime, 10)
+      const elapsedTime = Math.floor((Date.now() - startTime) / 1000)
+      setCurrentTime(elapsedTime)
+    }
+  }, [cardData.id])
+
+  useEffect(() => {
     let interval: NodeJS.Timeout
 
     if (isTracking) {
       interval = setInterval(() => {
-        setCurrentTime((prevTime) => prevTime + 1)
+        const startTime = parseInt(localStorage.getItem(`timeTracker_${cardData.id}_startTime`) || '0', 10)
+        const elapsedTime = Math.floor((Date.now() - startTime) / 1000)
+        setCurrentTime(elapsedTime)
       }, 1000)
     }
 
@@ -30,7 +44,7 @@ export default function TimeTracker({ cardData }: TimeTrackerProps) {
         clearInterval(interval)
       }
     }
-  }, [isTracking])
+  }, [isTracking, cardData.id])
 
   const formatTime = (seconds: number): string => {
     const hours = Math.floor(seconds / 3600)
@@ -47,7 +61,12 @@ export default function TimeTracker({ cardData }: TimeTrackerProps) {
       updateCardTrackedTimes({ 
         card: { ...cardData, trackedTimes: [...trackedTimes, newTrackedTime] } 
       })
+      localStorage.removeItem(`timeTracker_${cardData.id}_isTracking`)
+      localStorage.removeItem(`timeTracker_${cardData.id}_startTime`)
       router.refresh()
+    } else {
+      localStorage.setItem(`timeTracker_${cardData.id}_isTracking`, 'true')
+      localStorage.setItem(`timeTracker_${cardData.id}_startTime`, Date.now().toString())
     }
     setIsTracking(!isTracking)
   }
@@ -59,28 +78,20 @@ export default function TimeTracker({ cardData }: TimeTrackerProps) {
     }, 0)
   }
 
-  const totalTime = calculateTotalTime(trackedTimes)
+  const totalTime = calculateTotalTime(trackedTimes) + currentTime
 
   return (
     <div className="mt-4">
       <h3 className="text-sm font-semibold mb-2">Time Tracker</h3>
       <div className="flex items-center space-x-2 mb-2">
-        <div className="text-lg font-mono">{formatTime(currentTime)}</div>
-        <Button onClick={handleStartStop} variant={isTracking ? "destructive" : "default"} size={'xs'}>
+        <div className="text-md font-mono">{formatTime(currentTime)}</div>
+        <Button onClick={handleStartStop} variant={isTracking ? "destructive" : "default"} size="xs">
           {isTracking ? "Stop" : "Start"}
         </Button>
       </div>
       {trackedTimes.length > 0 && (
-        <div>
-          {/* <h4 className="text-xs font-semibold mb-1">Tracked Times:</h4> */}
-          {/* <ul className="text-xs space-y-1">
-            {trackedTimes.map((time, index) => (
-              <li key={index}>{time}</li>
-            ))}
-          </ul> */}
-          <div className="mt-4 text-sm font-semibold">
-            Total Time: {formatTime(totalTime)}
-          </div>
+        <div className="mt-4 text-sm font-semibold">
+          Total Time: {formatTime(totalTime)}
         </div>
       )}
     </div>
