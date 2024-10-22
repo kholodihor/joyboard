@@ -31,7 +31,7 @@ const ListHeader = ({ list, index }: { list: List; index: number }) => {
   };
   return (
     <div
-      className={`px-2 text-sm font-semibold flex justify-between items-center border-b`}
+      className={`px-2 text-sm font-semibold flex justify-between items-center border-b sticky inset-0 h-[2.5rem]`}
       style={{ backgroundColor: bgColors[index] }}
     >
       {isEditable ? (
