@@ -24,7 +24,7 @@ const TextAreaForm = ({
           placeholder={placeholder}
           defaultValue={defaultValue}
           className={cn(
-            "resize-none focus-visible:ring-0 focus-visible:ring-offset-0 ring-0 focus:ring-0 outline-none shadow-md",
+            " focus-visible:ring-0 focus-visible:ring-offset-0 ring-0 focus:ring-0 outline-none shadow-md",
             className
           )}
         />

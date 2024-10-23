@@ -62,7 +62,7 @@ const CardDescription = ({ cardData, setCardData }: CardDetails) => {
           ) : (
             <div
               role="button"
-              className="min-h-20 bg-slate-100 text-sm p-3 rounded-ms"
+              className="min-h-20 max-h-80 bg-slate-100 text-sm p-3 rounded-ms overflow-auto"
               onClick={() => setIsEditable(true)}
             >
               {cardData?.description || "Add More Details"}

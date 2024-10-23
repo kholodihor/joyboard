@@ -56,11 +56,11 @@ const AddCardMember = ({ card, boardId }: CardProps) => {
         <div className="text-sm font-medium text-center text-neutral-600 pb-4">
           Add Member
         </div>
-        <div>
+        <div className="max-h-80 overflow-auto">
           {members?.map((user: any) => (
             <div
               key={user?.id}
-              className="flex items-center gap-2 hover:bg-slate-100 p-2 cursor-pointer"
+              className="flex items-center gap-2 hover:bg-slate-100 p-2 cursor-pointer "
               onClick={() => handleSubmit(user)}
             >
               <Image
@@ -70,9 +70,9 @@ const AddCardMember = ({ card, boardId }: CardProps) => {
                 width={50}
                 height={50}
               />
-              <div>
+              <div className="">
                 <h1 className="font-semibold">{user?.name}</h1>
-                <p className="text-gray-400 text-xs">{user?.id}</p>
+                {/* <p className="text-gray-400 text-xs">{user?.id}</p> */}
               </div>
             </div>
           ))}
