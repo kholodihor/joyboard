@@ -43,14 +43,14 @@ const CardItem = ({ card, index }: { card: Card; index: number }) => {
           >
             <div className="mb-2 flex justify-between items-center gap-2">
               {card?.label?.map((item: any) => (
-                <div className="" key={item}>
+                <div className="flex gap-2" key={item}>
                   <div
                     className="w-8 h-2 rounded-md"
                     style={{ backgroundColor: getColor(item) }}
                   ></div>
                 </div>
               ))}
-              <div className="flex gap-[2px]">
+              <div className="flex gap-[2px] flex-1 justify-end">
                 {card?.users?.slice(0, 2).map((user: User) => (
                   <div className="" key={user.id}>
                     <Image
