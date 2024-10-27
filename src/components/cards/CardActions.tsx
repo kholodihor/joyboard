@@ -2,7 +2,7 @@
 
 import { Card } from "@/types";
 import { Button } from "../ui/button";
-import { CardCopy, CardDelete } from "@/app/actions/card";
+import { copyCard, deleteCard } from "@/app/actions/card";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
 import AddCardMember from "./AddCardMember";
@@ -14,8 +14,8 @@ const CardActions = ({ cardData }: { cardData: Card }) => {
 
   const handleCopy = async () => {
     try {
-      const res = await CardCopy({ id: cardData.id, boardId });
-      if (res?.result) {
+      const res = await copyCard({ id: cardData.id, boardId });
+      if (res.success) {
         toast.success("Card successfully copied");
       }
     } catch (error) {
@@ -26,8 +26,8 @@ const CardActions = ({ cardData }: { cardData: Card }) => {
 
   const handleDelete = async () => {
     try {
-      const res = await CardDelete({ id: cardData.id, boardId });
-      if (res?.result) {
+      const res = await deleteCard({ id: cardData.id, boardId });
+      if (res.success) {
         toast.success("Card successfully deleted");
       }
     } catch (error) {

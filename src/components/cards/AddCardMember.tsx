@@ -41,7 +41,7 @@ const AddCardMember = ({ card, boardId }: CardProps) => {
     <Popover>
       <PopoverTrigger>
         <Button
-          className="px-5 w-full bg-gray-200 hover:bg-gray-200 text-gray-700"
+          className="px-5 w-full min-w-[9rem] bg-gray-200 hover:bg-gray-200 text-gray-700"
           size="sm"
         >
           Members

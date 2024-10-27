@@ -6,6 +6,8 @@ import React, { useState } from "react";
 import CardModal from "./CardModal";
 import { labels } from "@/constants/labels";
 import { FiMessageCircle } from "react-icons/fi";
+import { FaTools } from "react-icons/fa";
+import { GoPaperclip } from "react-icons/go";
 import Image from "next/image";
 import CardDate from "./CardDate";
 import { useParams } from "next/navigation";
@@ -39,7 +41,7 @@ const CardItem = ({ card, index }: { card: Card; index: number }) => {
             role="button"
             className="py-2 px-3 text-sm rounded-md bg-white shadow-md font-bold overflow-x-hidden"
           >
-            <div className="mb-2 flex justify-start gap-2">
+            <div className="mb-2 flex justify-between items-center gap-2">
               {card?.label?.map((item: any) => (
                 <div className="" key={item}>
                   <div
@@ -48,14 +50,40 @@ const CardItem = ({ card, index }: { card: Card; index: number }) => {
                   ></div>
                 </div>
               ))}
+              <div className="flex gap-[2px]">
+                {card?.users?.slice(0, 2).map((user: User) => (
+                  <div className="" key={user.id}>
+                    <Image
+                      src={user?.image || "/logo.jpg"}
+                      alt={user?.name}
+                      width={30}
+                      height={30}
+                      className="h-7 w-7 rounded-full"
+                    />
+                  </div>
+                ))}
+                {card?.users && card?.users?.length > 2 && <span>...</span>}
+              </div>
             </div>
             {card.title}
             <div className="mt-3 flex justify-between items-center gap-2">
-              <div className="flex gap-4">
+              <div className="flex gap-2">
+                {card && card?.links.length ? (
+                  <div className="flex gap-[5px] items-center text-sm text-slate-600">
+                    <GoPaperclip />
+                    {card?.links?.length}
+                  </div>
+                ) : null}
                 {card && card?.comments.length ? (
                   <div className="flex gap-[5px] items-center text-sm text-slate-600">
                     <FiMessageCircle />
                     {card?.comments?.length}
+                  </div>
+                ) : null}
+                {card && card?.todos.length ? (
+                  <div className="flex gap-[5px] items-center text-sm text-slate-600">
+                    <FaTools />
+                    {card?.todos?.length}
                   </div>
                 ) : null}
                 <div
@@ -67,26 +95,12 @@ const CardItem = ({ card, index }: { card: Card; index: number }) => {
                   ) : null}
                 </div>
               </div>
-       <div className="flex gap-[5px]">
-       {card?.users?.slice(0, 2).map((user: User) => (
-                <div className="" key={user.id}>
-                  <Image
-                    src={user?.image || "/logo.jpg"}
-                    alt={user?.name}
-                    width={30}
-                    height={30}
-                    className="h-7 w-7 rounded-full"
-                  />
-                </div>
-              ))}
-              {card?.users && card?.users?.length > 2 && <span>...</span>}
-       </div>
             </div>
-            <div   onMouseEnter={() => setIsModalAllowed(false)}
-                  onMouseLeave={() => setIsModalAllowed(true)}>
-                {card ? (
-                  <TimeTracker cardData={card} />
-                ) : null}
+            <div onMouseEnter={() => setIsModalAllowed(false)}
+              onMouseLeave={() => setIsModalAllowed(true)}>
+              {card ? (
+                <TimeTracker cardData={card} />
+              ) : null}
             </div>
           </div>
         )}

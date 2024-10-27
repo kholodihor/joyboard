@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef } from "react";
-import { addCardComment } from "@/app/actions/card";
+import { addCardComment, removeCardComment } from "@/app/actions/card";
 import React, { useState } from "react";
 import { toast } from "sonner";
 import TextAreaForm from "../atomic/TextAreaForm";
@@ -8,8 +8,9 @@ import FormSubmit from "../atomic/FormSubmit";
 import { Button } from "../ui/button";
 import { Comment } from "@/types";
 import { useSession } from "next-auth/react";
-import { getMembersOfBoard } from "@/app/actions/board";
 import Image from "next/image";
+import { FaRegTrashCan } from "react-icons/fa6";
+import SubTitle from "./SubTitle";
 
 interface CardDetails {
   card: any;
@@ -24,46 +25,17 @@ const CardCommentsInput = ({ card, setCardData }: CardDetails) => {
   const { data: session } = useSession();
 
   useEffect(() => {
-    const getUserImage = async (email: string) => {
-      try {
-        const board = await getMembersOfBoard({ boardId: card.boardId });
-        const commentUser = board?.Users?.find(
-          (user: any) => user.email === email
-        );
-
-        if (commentUser) {
-          return commentUser.image;
-        }
-
-        return "";
-      } catch (error) {
-        console.error("Error getting user image:", error);
-        return "";
-      }
-    };
-
-    const fetchCommentImages = async () => {
-      if (card?.comments) {
-        const updatedComments = await Promise.all(
-          card.comments.map(async (comment: Comment) => ({
-            ...comment,
-            image: await getUserImage(comment.user),
-          }))
-        );
-        setComments(updatedComments);
-      }
-    };
-
-    fetchCommentImages();
-  }, [card.boardId, card.comments]);
+    setComments(card.comments);
+  }, [card]);
 
   const handleSubmit = async (data: FormData) => {
     const comment = data.get("comment") as string;
     try {
       card?.comments?.push({
+        id: crypto.randomUUID(),
         text: comment,
-        image: "",
-        user: session?.user?.email,
+        image: session?.user?.image,
+        user: session?.user?.name,
       });
       const res = await addCardComment({
         card,
@@ -78,22 +50,39 @@ const CardCommentsInput = ({ card, setCardData }: CardDetails) => {
     }
   };
 
+
+  const handleRemove = async (id: string) => {
+    try {
+      if (confirm('Are you sure you want to delete this comment?')) {
+        const updatedCard = {
+          ...card,
+          comments: card.comments.filter((comment: { id: string; }) => comment.id !== id),
+        }
+        setComments(updatedCard.comments)
+        const res = await removeCardComment({
+          card: updatedCard
+        })
+        if (res?.success) {
+          setCardData(res.result)
+          setComments(res.result.comments)
+          toast.success('Comment deleted')
+        } else {
+          toast.error(res?.error || 'Failed to delete comment')
+        }
+      }
+    } catch (error) {
+      console.error('Error deleting comment:', error)
+      toast.error('Failed to delete comment')
+    }
+  }
+
   return (
     <div className="mb-[1rem]">
       <div>
-        <p
-          className="font-bold text-slate-700 cursor-pointer flex gap-2 items-center"
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          Comments
-          {card?.comments?.length ? (
-            <span className="text-purple-500">{card?.comments?.length}</span>
-          ) : null}
-        </p>
+        <SubTitle title="Comments" isOpen={isOpen} setIsOpen={setIsOpen} length={comments.length} />
         <div
-          className={`max-h-[40vh] overflow-auto no-scrollbar ${
-            isOpen ? "block" : "hidden"
-          }`}
+          className={`max-h-[40vh] overflow-auto no-scrollbar ${isOpen ? "block" : "hidden"
+            }`}
         >
           <div className="my-2">
             {comments.map((comment: Comment, index: number) => (
@@ -101,15 +90,19 @@ const CardCommentsInput = ({ card, setCardData }: CardDetails) => {
                 key={index}
                 className="flex flex-col gap-2 mb-2 bg-input rounded-md items-start p-2"
               >
-                <Image
-                  src={comment.image || ""}
-                  className="h-7 w-7 rounded-full object-cover"
-                  alt={`${comment.user}'s avatar`}
-                  width={30}
-                  height={30}
-                />
-                <div className="flex flex-col">
+                <div className="flex w-full gap-2 items-center">
+                  <Image
+                    src={comment.image || "/logo.jpg"}
+                    className="h-7 w-7 rounded-full object-cover"
+                    alt={`${comment.user}'s avatar`}
+                    width={30}
+                    height={30}
+                  />
+                  <span className="text-xs">{comment.user}</span>
+                </div>
+                <div className="flex flex-col w-full">
                   <p className="bg-input p-2 text-xs">{comment.text}</p>
+                  <div className="flex justify-end w-full"><button onClick={() => handleRemove(comment.id)} className="text-red-500"><FaRegTrashCan /></button></div>
                 </div>
               </div>
             ))}

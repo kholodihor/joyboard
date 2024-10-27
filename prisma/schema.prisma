@@ -101,6 +101,8 @@ model Card {
 
   label       String[]
   comments    Comment[]
+  todos       Todo[]
+  links       String[]
   dateTo      DateTime?
   isCompleted Boolean   @default(false)
   trackedTimes String[] 
@@ -108,7 +110,14 @@ model Card {
   updatedAt   DateTime  @updatedAt
 }
 
+type Todo{
+  id          String
+  content     String
+  completed   Boolean
+}
+
 type Comment{
+  id   String
   text String?
   image String?
   user  String

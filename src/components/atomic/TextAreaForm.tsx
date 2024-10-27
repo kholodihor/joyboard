@@ -14,7 +14,6 @@ const TextAreaForm = ({
   className,
   defaultValue,
 }: InputProps) => {
-  console.log(placeholder);
   return (
     <div>
       <div className="space-y-1 w-full">

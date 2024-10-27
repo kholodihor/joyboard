@@ -13,6 +13,8 @@ import CardCommentsInput from "./CardCommentsInput";
 import { useParams } from "next/navigation";
 import CardDate from "./CardDate";
 import { Skeleton } from "@/components/ui/skeleton";
+import CardTodo from "./CardTodo";
+import CardLinks from "./CardLinks";
 
 interface CardModel {
   id: string;
@@ -87,7 +89,7 @@ const CardModal = ({ id, isModal, setIsModal }: CardModel) => {
                 ) : null}
               </div>
               <div>
-            
+
               </div>
 
               <div className="mt-10">
@@ -95,6 +97,8 @@ const CardModal = ({ id, isModal, setIsModal }: CardModel) => {
                   cardData={cardData}
                   setCardData={setCardData}
                 />
+                <CardLinks cardData={cardData} setCardData={setCardData} />
+                <CardTodo cardData={cardData} setCardData={setCardData} />
                 <CardCommentsInput card={cardData} setCardData={setCardData} />
               </div>
             </div>

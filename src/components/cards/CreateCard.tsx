@@ -23,7 +23,7 @@ const CreateCard = ({ listId }: { listId: string }) => {
         return;
       }
       const res = await createCard({ title, listId, boardId });
-      if (res?.result) {
+      if (res?.success) {
         toast.success("Card successfully added");
       }
       formRef.current?.reset();
@@ -31,6 +31,7 @@ const CreateCard = ({ listId }: { listId: string }) => {
       toast.error("card not created");
     }
   };
+
 
   if (isEditable) {
     return (

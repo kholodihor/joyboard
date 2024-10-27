@@ -32,7 +32,7 @@ const AddCardDate = ({ card }: CardProps) => {
     <Popover>
       <PopoverTrigger>
         <Button
-          className="px-9 w-full bg-gray-200 hover:bg-gray-200 text-gray-700"
+          className="px-9 w-full min-w-[9rem] bg-gray-200 hover:bg-gray-200 text-gray-700"
           size="sm"
         >
           Date
