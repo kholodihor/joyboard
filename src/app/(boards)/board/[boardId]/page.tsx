@@ -25,6 +25,7 @@ const BoardPage = async ({ params }: { params: { boardId: string } }) => {
       order: "asc",
     },
   });
+
   return (
     <div className="p-4 w-full overflow-x-auto no-scrollbar">
       <DynamicPage boardId={params.boardId} list={list} />

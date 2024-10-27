@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, User } from "@/types";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import { Button } from "../ui/button";
 import { addCardMember, getNoCardMembers } from "@/app/actions/card";
 import Image from "next/image";
 
@@ -40,12 +39,11 @@ const AddCardMember = ({ card, boardId }: CardProps) => {
   return (
     <Popover>
       <PopoverTrigger>
-        <Button
-          className="px-5 w-full min-w-[9rem] bg-gray-200 hover:bg-gray-200 text-gray-700"
-          size="sm"
+        <div
+          className="px-9 py-[0.4rem] rounded-md w-full min-w-[9rem] bg-gray-200 hover:bg-gray-200 text-gray-700"
         >
           Members
-        </Button>
+        </div>
       </PopoverTrigger>
       <PopoverContent
         align="start"

@@ -111,16 +111,16 @@ model Card {
 }
 
 type Todo{
-  id          String
-  content     String
-  completed   Boolean
+  id          String?
+  content     String?
+  completed   Boolean?
 }
 
 type Comment{
-  id   String
+  id   String?
   text String?
   image String?
-  user  String
+  user  String?
 }
 
 enum ACTION {

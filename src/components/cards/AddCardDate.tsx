@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/types";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import { Button } from "../ui/button";
 import { Calendar } from "../ui/calendar";
 import { updateCardDate } from "@/app/actions/card";
 import { useRouter } from "next/navigation";
@@ -31,12 +30,11 @@ const AddCardDate = ({ card }: CardProps) => {
   return (
     <Popover>
       <PopoverTrigger>
-        <Button
-          className="px-9 w-full min-w-[9rem] bg-gray-200 hover:bg-gray-200 text-gray-700"
-          size="sm"
+        <div
+          className="px-9 py-[0.4rem] rounded-md w-full min-w-[9rem] bg-gray-200 hover:bg-gray-200 text-gray-700"
         >
           Date
-        </Button>
+        </div>
       </PopoverTrigger>
       <PopoverContent
         align="start"

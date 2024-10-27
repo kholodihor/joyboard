@@ -1,7 +1,6 @@
 "use client";
 import { Card, LabelData } from "@/types";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import { Button } from "../ui/button";
 import { updateCardLabel } from "@/app/actions/card";
 import { useRouter } from "next/navigation";
 import { labels } from "@/constants/labels";
@@ -33,12 +32,11 @@ const AddCardLabel = ({ card }: CardProps) => {
   return (
     <Popover>
       <PopoverTrigger>
-        <Button
-          className="px-[2.1rem] w-full min-w-[9rem] bg-gray-200 hover:bg-gray-200 text-gray-700"
-          size="sm"
+        <div
+          className="px-9 py-[0.4rem] rounded-md w-full min-w-[9rem] bg-gray-200 hover:bg-gray-200 text-gray-700"
         >
           Label
-        </Button>
+        </div>
       </PopoverTrigger>
       <PopoverContent
         align="start"
