@@ -48,8 +48,8 @@ const AddCardMember = ({ card, boardId }: CardProps) => {
       <PopoverContent
         align="start"
         className="w-80 pt-3 z-50 bg-white"
-        side="bottom"
-        sideOffset={18}
+        side="right"
+        sideOffset={5}
       >
         <div className="text-sm font-medium text-center text-neutral-600 pb-4">
           Add Member
