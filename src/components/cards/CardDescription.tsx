@@ -3,9 +3,11 @@ import { updateCard } from "@/app/actions/card";
 import { useParams } from "next/navigation";
 import React, { useState } from "react";
 import { toast } from "sonner";
-import TextAreaForm from "../atomic/TextAreaForm";
+// import TextAreaForm from "../atomic/TextAreaForm";
 import FormSubmit from "../atomic/FormSubmit";
 import { Button } from "../ui/button";
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 interface CardDetails {
   cardData: any;
@@ -15,11 +17,12 @@ interface CardDetails {
 const CardDescription = ({ cardData, setCardData }: CardDetails) => {
   const { boardId }: { boardId: string } = useParams();
   const [isEditable, setIsEditable] = useState(false);
+  const [editorValue, setEditorValue] = useState(cardData?.description || '');
 
-  const handleSubmit = async (data: FormData) => {
-    const description = data.get("description") as string;
+  const handleSubmit = async () => {
+    // const description = data.get("description") as string;
     const res = await updateCard({
-      description,
+      description: editorValue,
       boardId,
       id: cardData?.id,
     });
@@ -41,11 +44,17 @@ const CardDescription = ({ cardData, setCardData }: CardDetails) => {
         <div className={`mt-5`}>
           {isEditable ? (
             <form action={handleSubmit} className="space-y-2">
-              <TextAreaForm
+              {/* <TextAreaForm
                 id="description"
                 className="w-full mt-2"
                 placeholder="Add more details"
                 defaultValue={cardData?.description || ""}
+              /> */}
+              <ReactQuill
+                value={editorValue}
+                onChange={setEditorValue}
+                placeholder="Add more details"
+                className="w-full mt-2"
               />
               <div className="flex justify-between items-center">
                 <FormSubmit>Save</FormSubmit>
@@ -62,10 +71,11 @@ const CardDescription = ({ cardData, setCardData }: CardDetails) => {
           ) : (
             <div
               role="button"
-              className="min-h-20 max-h-80 bg-slate-100 text-sm p-3 rounded-ms overflow-auto"
+              className="min-h-20 max-h-70 bg-slate-100 text-sm p-3 rounded-ms overflow-auto"
               onClick={() => setIsEditable(true)}
+              dangerouslySetInnerHTML={{ __html: editorValue }}
             >
-              {cardData?.description || "Add More Details"}
+              {/* {cardData?.description || "Add More Details"} */}
             </div>
           )}
         </div>

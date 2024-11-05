@@ -58,8 +58,8 @@ export default function TimeTracker({ cardData }: TimeTrackerProps) {
       const newTrackedTime = formatTime(currentTime)
       setTrackedTimes((prevTimes) => [...prevTimes, newTrackedTime])
       setCurrentTime(0)
-      updateCardTrackedTimes({ 
-        card: { ...cardData, trackedTimes: [...trackedTimes, newTrackedTime] } 
+      updateCardTrackedTimes({
+        card: { ...cardData, trackedTimes: [...trackedTimes, newTrackedTime] }
       })
       localStorage.removeItem(`timeTracker_${cardData.id}_isTracking`)
       localStorage.removeItem(`timeTracker_${cardData.id}_startTime`)
@@ -82,7 +82,7 @@ export default function TimeTracker({ cardData }: TimeTrackerProps) {
 
   return (
     <div className="mt-4">
-      <h3 className="text-sm font-semibold mb-2">Time Tracker</h3>
+      {/* <h3 className="text-sm font-semibold mb-2">Time Tracker</h3> */}
       <div className="flex items-center space-x-2 mb-2">
         <div className="text-md font-mono">{formatTime(currentTime)}</div>
         <Button onClick={handleStartStop} variant={isTracking ? "destructive" : "default"} size="xs">
