@@ -7,7 +7,7 @@ import { fetcher } from "@/lib/fetcher";
 import CardDescription from "./CardDescription";
 import CardActions from "./CardActions";
 import { User } from "@/types";
-import { addCardMember } from "@/app/actions/card";
+import { removeMemberFromCard } from "@/app/actions/card";
 import { labels } from "@/constants/labels";
 import CardCommentsInput from "./CardCommentsInput";
 import { useParams } from "next/navigation";
@@ -46,7 +46,7 @@ const CardModal = ({ id, isModal, setIsModal }: CardModel) => {
       cardData?.userIds?.splice(userIndex, 1);
     }
 
-    await addCardMember({ user, card: cardData });
+    await removeMemberFromCard({ user, card: cardData });
     setCardData(cardData);
   };
 

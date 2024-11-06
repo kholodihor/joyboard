@@ -7,7 +7,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { Card, UpdateCard, User } from "@/types";
 
-type CardResponse = 
+type CardResponse =
   | { success: true, result: any }
   | { success: false, error: string }
 
@@ -55,9 +55,9 @@ export const createCard = async (data: {
         order,
         label: [],
         comments: [],
-        links:[],
+        links: [],
         trackedTimes: [],
-        todos:[],
+        todos: [],
         dateTo: null,
       },
     })
@@ -65,7 +65,7 @@ export const createCard = async (data: {
     revalidatePath(`/board/${boardId}`)
     return { success: true, result: card }
   } catch (error) {
-    return {success: false, ...handleServerError(error, "Failed to create card")}
+    return { success: false, ...handleServerError(error, "Failed to create card") }
   }
 }
 
@@ -82,7 +82,7 @@ export const updateCard = async (data: z.infer<typeof UpdateCard>) => {
     revalidatePath(`/board/${boardId}`);
     return { success: true, result: card }
   } catch (error) {
-    return {success: false, ...handleServerError(error, "Failed to update card")}
+    return { success: false, ...handleServerError(error, "Failed to update card") }
   }
 };
 
@@ -113,8 +113,8 @@ export const copyCard = async (data: { id: string; boardId: string }) => {
         label: [],
         comments: [],
         trackedTimes: [],
-        todos:[],
-        links:[],
+        todos: [],
+        links: [],
         dateTo: null,
         listId: originalCard.listId,
         boardId,
@@ -124,7 +124,7 @@ export const copyCard = async (data: { id: string; boardId: string }) => {
     revalidatePath(`/board/${boardId}`);
     return { success: true, result: card }
   } catch (error) {
-    return {success: false, ...handleServerError(error, "Failed to copy card")}
+    return { success: false, ...handleServerError(error, "Failed to copy card") }
   }
 };
 
@@ -140,7 +140,7 @@ export const deleteCard = async (data: { id: string; boardId: string }) => {
     revalidatePath(`/board/${boardId}`);
     return { success: true, result: card }
   } catch (error) {
-    return {success: false, ...handleServerError(error, "Failed to delete card")}
+    return { success: false, ...handleServerError(error, "Failed to delete card") }
   }
 };
 
@@ -167,9 +167,9 @@ export const getNoCardMembers = async (data: {
       },
     });
     revalidatePath(`/board/${boardId}`);
-    return { success: true, result: users}
+    return { success: true, result: users }
   } catch (error) {
-    return {success: false, ...handleServerError(error, "Failed to get non-card members")}
+    return { success: false, ...handleServerError(error, "Failed to get non-card members") }
   }
 };
 
@@ -195,11 +195,38 @@ export const addCardMember = async (data: { user: User; card: Card }) => {
     ])
 
     revalidatePath(`/`)
-    return { success:true, result: { updateUser, updatedCard } }
+    return { success: true, result: { updateUser, updatedCard } }
   } catch (error) {
-    return {success: false, ...handleServerError(error, "Failed to add card member")}
+    return { success: false, ...handleServerError(error, "Failed to add card member") }
   }
 }
+
+export const removeMemberFromCard = async (data: { user: User; card: Card }) => {
+  try {
+    await authenticateUser();
+    const { user, card } = data;
+
+    const [updatedUser, updatedCard] = await prisma.$transaction([
+      prisma.user.update({
+        where: { id: user.id },
+        data: {
+          cardIds: { set: user?.cardIds?.filter(id => id !== card.id) }, // Remove card ID from user's cardIds
+        },
+      }),
+      prisma.card.update({
+        where: { id: card.id },
+        data: {
+          userIds: { set: card?.userIds?.filter(id => id !== user.id) }, // Remove user ID from card's userIds
+        },
+      }),
+    ]);
+
+    revalidatePath(`/`);
+    return { success: true, result: { updatedUser, updatedCard } };
+  } catch (error) {
+    return { success: false, ...handleServerError(error, "Failed to remove card member") };
+  }
+};
 
 //update label of the card
 export const updateCardLabel = async (data: { card: Card }) => {
@@ -215,9 +242,9 @@ export const updateCardLabel = async (data: { card: Card }) => {
     })
 
     revalidatePath(`/board/${card.boardId}`)
-    return { success:true, result:  updatedCard  }
+    return { success: true, result: updatedCard }
   } catch (error) {
-    return {success: false, ...handleServerError(error, "Failed to update card label")}
+    return { success: false, ...handleServerError(error, "Failed to update card label") }
   }
 }
 
@@ -235,9 +262,9 @@ export const updateCardIsCompleted = async (data: { card: Card }) => {
     })
 
     revalidatePath(`/board/${card.boardId}`)
-    return { success:true,  result: updatedCard  }
+    return { success: true, result: updatedCard }
   } catch (error) {
-    return {success: false, ...handleServerError(error, "Failed to update card completion status")}
+    return { success: false, ...handleServerError(error, "Failed to update card completion status") }
   }
 }
 
@@ -255,14 +282,14 @@ export const addCardComment = async (data: { card: Card }) => {
     })
 
     revalidatePath(`/board/${card.boardId}`)
-    return { success:true, result: updatedCard  }
+    return { success: true, result: updatedCard }
   } catch (error) {
-    return {success: false, ...handleServerError(error, "Failed to add card comment")}
+    return { success: false, ...handleServerError(error, "Failed to add card comment") }
   }
 }
 
 //remove comment from the card
-export const removeCardComment = async (data: { card: Card }):Promise<CardResponse> => {
+export const removeCardComment = async (data: { card: Card }): Promise<CardResponse> => {
   try {
     await authenticateUser()
     const { card } = data
@@ -274,9 +301,9 @@ export const removeCardComment = async (data: { card: Card }):Promise<CardRespon
       },
     })
     revalidatePath(`/board/${card.boardId}`)
-    return { success:true, result: updatedCard  }
+    return { success: true, result: updatedCard }
   } catch (error) {
-    return {success: false, ...handleServerError(error, "Failed to delete card comment")}
+    return { success: false, ...handleServerError(error, "Failed to delete card comment") }
   }
 }
 
@@ -294,14 +321,14 @@ export const addCardTodo = async (data: { card: Card }) => {
     })
 
     revalidatePath(`/board/${card.boardId}`)
-    return { success:true, result:  updatedCard  }
+    return { success: true, result: updatedCard }
   } catch (error) {
-    return {success: false, ...handleServerError(error, "Failed to add card todo")}
+    return { success: false, ...handleServerError(error, "Failed to add card todo") }
   }
 }
 
 //update todo completed
-export const changeTodoCompleted = async (data: { card: Card }):Promise<CardResponse> => {
+export const changeTodoCompleted = async (data: { card: Card }): Promise<CardResponse> => {
   try {
     await authenticateUser()
     const { card } = data
@@ -314,14 +341,14 @@ export const changeTodoCompleted = async (data: { card: Card }):Promise<CardResp
     })
 
     revalidatePath(`/board/${card.boardId}`)
-    return { success:true, result: updatedCard  }
+    return { success: true, result: updatedCard }
   } catch (error) {
-    return {success: false, ...handleServerError(error, "Failed to add card todo")}
+    return { success: false, ...handleServerError(error, "Failed to add card todo") }
   }
 }
 
 //remove todo from the card
-export const removeCardTodo = async (data: { card: Card }):Promise<CardResponse> => {
+export const removeCardTodo = async (data: { card: Card }): Promise<CardResponse> => {
   try {
     await authenticateUser()
     const { card } = data
@@ -333,9 +360,9 @@ export const removeCardTodo = async (data: { card: Card }):Promise<CardResponse>
       },
     })
     revalidatePath(`/board/${card.boardId}`)
-    return { success:true, result: updatedCard  }
+    return { success: true, result: updatedCard }
   } catch (error) {
-    return {success: false, ...handleServerError(error, "Failed to delete card todo")}
+    return { success: false, ...handleServerError(error, "Failed to delete card todo") }
   }
 }
 
@@ -353,14 +380,14 @@ export const addCardLink = async (data: { card: Card }) => {
     })
 
     revalidatePath(`/board/${card.boardId}`)
-    return { success:true, result:  updatedCard  }
+    return { success: true, result: updatedCard }
   } catch (error) {
-    return {success: false, ...handleServerError(error, "Failed to add card link")}
+    return { success: false, ...handleServerError(error, "Failed to add card link") }
   }
 }
 
 //remove link from the card
-export const removeCardLink = async (data: { card: Card }):Promise<CardResponse> => {
+export const removeCardLink = async (data: { card: Card }): Promise<CardResponse> => {
   try {
     await authenticateUser()
     const { card } = data
@@ -372,9 +399,9 @@ export const removeCardLink = async (data: { card: Card }):Promise<CardResponse>
       },
     })
     revalidatePath(`/board/${card.boardId}`)
-    return { success:true, result: updatedCard  }
+    return { success: true, result: updatedCard }
   } catch (error) {
-    return {success: false, ...handleServerError(error, "Failed to delete card link")}
+    return { success: false, ...handleServerError(error, "Failed to delete card link") }
   }
 }
 
@@ -392,9 +419,9 @@ export const updateCardDate = async (data: { card: Card }) => {
     })
 
     revalidatePath(`/board/${card.boardId}`)
-    return { success:true, result: { updatedCard } }
+    return { success: true, result: { updatedCard } }
   } catch (error) {
-    return {success: false, ...handleServerError(error, "Failed to update card date")}
+    return { success: false, ...handleServerError(error, "Failed to update card date") }
   }
 }
 
@@ -417,9 +444,9 @@ export const reorderCard = async (data: { items: any[]; boardId: string }) => {
     )
 
     revalidatePath(`/board/${boardId}`)
-    return { success:true, result: cards }
+    return { success: true, result: cards }
   } catch (error) {
-    return {success: false, ...handleServerError(error, "Failed to reorder cards")}
+    return { success: false, ...handleServerError(error, "Failed to reorder cards") }
   }
 }
 
@@ -437,8 +464,8 @@ export const updateCardTrackedTimes = async (data: { card: Card }) => {
     })
 
     revalidatePath(`/board/${card.boardId}`)
-    return { success:true, result: { updatedCard } }
+    return { success: true, result: { updatedCard } }
   } catch (error) {
-    return {success: false, ...handleServerError(error, "Failed to update card tracked times")}
+    return { success: false, ...handleServerError(error, "Failed to update card tracked times") }
   }
 }
