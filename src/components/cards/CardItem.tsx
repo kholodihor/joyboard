@@ -52,7 +52,7 @@ const CardItem = ({ card, index }: { card: Card; index: number }) => {
               ))}
               <div className="flex gap-[2px] flex-1 justify-end">
                 {card?.users?.slice(0, 2).map((user: User) => (
-                  <div className="" key={user.id}>
+                  <div className="" key={user.id} title={user?.name}>
                     <Image
                       src={user?.image || "/logo.jpg"}
                       alt={user?.name}

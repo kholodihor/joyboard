@@ -22,6 +22,8 @@ const AddBoardMembers = ({ board }: { board: Board }) => {
     getMembers();
   }, []);
 
+  console.log(members)
+
   const addMembers = async (user: User) => {
     user?.boardIds?.push(board.id);
     board?.userIds?.push(user.id);

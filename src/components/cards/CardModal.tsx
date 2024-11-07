@@ -37,18 +37,22 @@ const CardModal = ({ id, isModal, setIsModal }: CardModel) => {
   }, [cardDetails]);
 
   const removeCardMember = async (user: User) => {
-    const cardIndex: any = user?.cardIds?.indexOf(cardData?.id);
-    if (cardIndex > -1) {
-      user?.cardIds?.splice(cardIndex, 1);
-    }
-    const userIndex: any = cardData?.userIds?.indexOf(user?.id);
-    if (userIndex > -1) {
-      cardData?.userIds?.splice(userIndex, 1);
-    }
+    if (!user || !cardData) return;
 
-    await removeMemberFromCard({ user, card: cardData });
-    setCardData(cardData);
+    const updatedCardIds = user.cardIds?.filter((id) => id !== cardData.id) || [];
+    const updatedUserIds = cardData.userIds?.filter((id) => id !== user.id) || [];
+
+    const updatedUser = { ...user, cardIds: updatedCardIds };
+    const updatedCard = { ...cardData, userIds: updatedUserIds };
+
+    setCardData(updatedCard);
+
+    await removeMemberFromCard({ user: updatedUser, card: updatedCard });
+
+    window.location.reload();
   };
+
+  console.log(cardData?.users)
 
   return (
     <Dialog open={isModal} onOpenChange={() => setIsModal(false)}>
@@ -64,6 +68,7 @@ const CardModal = ({ id, isModal, setIsModal }: CardModel) => {
                     className="relative after:cursor-pointer after:content-['x'] after:text-xs after:absolute after:right-[-5px] after:top-[-10px] after:bg-red-500 after:h-4 after:w-4 after:flex after:items-center after:justify-center after:text-white after:rounded-full"
                     onClick={() => removeCardMember(user)}
                     key={user.id}
+                    title={user?.name}
                   >
                     <Image
                       src={user?.image || "/logo.jpg"}

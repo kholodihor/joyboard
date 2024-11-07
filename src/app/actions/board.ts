@@ -80,29 +80,26 @@ export const getNoBoardMembers = async (data: { board: any }) => {
   }
 
   const { board } = data;
-  let users;
 
   try {
-    users = await prisma.user.findMany({
+    // Find users who are NOT associated with the given board ID
+    const users = await prisma.user.findMany({
       where: {
-        AND: [
-          {
-            NOT: {
-              boards: {
-                some: { id: board.id },
-              },
-            },
-          },
-        ],
+        boards: {
+          none: { id: board.id },  // Exclude users who have this board ID in their boards
+        },
       },
     });
+
+    // Revalidate the board path to ensure fresh data
+    revalidatePath(`/board/${board.id}`);
+    return { result: users };
+
   } catch (error) {
     return {
       error: "board id not exist",
     };
   }
-  revalidatePath(`/board/${board.id}`);
-  return { result: users };
 };
 
 // add memeber in board

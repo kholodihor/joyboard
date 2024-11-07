@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Card, User } from "@/types";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { addCardMember, getNoCardMembers } from "@/app/actions/card";
@@ -12,7 +11,6 @@ interface CardProps {
   boardId: string;
 }
 const AddCardMember = ({ card, boardId }: CardProps) => {
-  const router = useRouter();
   const [members, setMembers] = useState<any>([]);
 
   useEffect(() => {
@@ -27,15 +25,21 @@ const AddCardMember = ({ card, boardId }: CardProps) => {
   }, [boardId, card]);
 
   const handleSubmit = async (user: any) => {
-    user?.cardIds?.push(card?.id);
-    card?.userIds?.push(user?.id);
-    await addCardMember({
-      user,
-      card,
-    });
-    setMembers(members?.filter((item: User) => item?.id != user?.id));
-    router.refresh();
+    if (user && card) {
+      const updatedUser = { ...user, cardIds: [...(user.cardIds || []), card.id] };
+      const updatedCard = { ...card, userIds: [...(card.userIds || []), user.id] };
+
+      setMembers((prevMembers) => prevMembers?.filter((item: User) => item?.id !== user.id));
+
+      await addCardMember({
+        user: updatedUser,
+        card: updatedCard,
+      });
+
+      window.location.reload();
+    }
   };
+
   return (
     <Popover>
       <PopoverTrigger>

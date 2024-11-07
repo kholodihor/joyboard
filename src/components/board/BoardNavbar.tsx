@@ -16,6 +16,7 @@ const BoardNavbar = async ({ board }: { board: Board }) => {
             height={30}
             alt={user.name}
             key={user?.id}
+            title={user.name}
           />
         ))}
         <AddBoardMembers board={board} />
