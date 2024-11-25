@@ -88,6 +88,12 @@
   body {
     @apply bg-background text-foreground;
   }
+  ol {
+    list-style-type: decimal; /* Ensure numbers appear */
+  }
+  ul {
+    list-style-type: disc; /* Default style for bullets (solid circle) */
+  }
 }
 
 @layer utilities {

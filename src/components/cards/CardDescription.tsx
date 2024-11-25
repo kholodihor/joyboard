@@ -19,6 +19,8 @@ const CardDescription = ({ cardData, setCardData }: CardDetails) => {
   const [isEditable, setIsEditable] = useState(false);
   const [editorValue, setEditorValue] = useState(cardData?.description || '');
 
+  console.log(editorValue)
+
   const handleSubmit = async () => {
     // const description = data.get("description") as string;
     const res = await updateCard({
@@ -71,7 +73,7 @@ const CardDescription = ({ cardData, setCardData }: CardDetails) => {
           ) : (
             <div
               role="button"
-              className="min-h-20 max-h-70 bg-slate-100 text-sm p-3 rounded-ms overflow-auto"
+              className="min-h-20 pl-6 max-h-70 bg-slate-100 text-sm p-3 rounded-ms overflow-auto"
               onClick={() => setIsEditable(true)}
               dangerouslySetInnerHTML={{ __html: editorValue }}
             >
