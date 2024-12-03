@@ -1,6 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import BoardNavbar from "@/components/board/BoardNavbar";
 import { prisma } from "@/lib/prisma";
+import BoardNavbar from "@/components/board/BoardNavbar";
 
 const BoardLayout = async ({
   children,
@@ -15,7 +14,7 @@ const BoardLayout = async ({
   });
   return (
     <div
-      className="relative h-[88vh] bg-no-repeat bg-cover bg-center"
+      className="relative h-[88vh] bg-cover bg-center bg-no-repeat"
       style={{ backgroundImage: `url(${board?.image})` }}
     >
       <BoardNavbar board={board} />

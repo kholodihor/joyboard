@@ -1,5 +1,5 @@
-import { Textarea } from "../ui/textarea";
 import { cn } from "@/lib/utils";
+import { Textarea } from "../ui/textarea";
 
 interface InputProps {
   id: string;
@@ -16,14 +16,14 @@ const TextAreaForm = ({
 }: InputProps) => {
   return (
     <div>
-      <div className="space-y-1 w-full">
+      <div className="w-full space-y-1">
         <Textarea
           id={id}
           name={id}
           placeholder={placeholder}
           defaultValue={defaultValue}
           className={cn(
-            " focus-visible:ring-0 focus-visible:ring-offset-0 ring-0 focus:ring-0 outline-none shadow-md",
+            "shadow-md outline-none ring-0 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0",
             className
           )}
         />

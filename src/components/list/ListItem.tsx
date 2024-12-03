@@ -1,9 +1,9 @@
-import { Card, List } from "@/types";
-import ListHeader from "./ListHeader";
 import { Draggable, Droppable } from "@hello-pangea/dnd";
 import { cn } from "@/lib/utils";
+import { Card, List } from "@/types";
 import CardItem from "../cards/CardItem";
 import CreateCard from "../cards/CreateCard";
+import ListHeader from "./ListHeader";
 
 const ListItem = ({ list, index }: { list: List; index: number }) => {
   return (
@@ -12,11 +12,11 @@ const ListItem = ({ list, index }: { list: List; index: number }) => {
         <li
           {...provided.draggableProps}
           ref={provided.innerRef}
-          className="shrink-0 h-full w-[272px] rounded-md select-none max-h-[77vh] overflow-auto no-scrollbar"
+          className="no-scrollbar h-full max-h-[77vh] w-[272px] shrink-0 select-none overflow-auto rounded-md"
         >
           <div
             {...provided.dragHandleProps}
-            className="w-full rounded-md bg-slate-50 shadow-md pb-2 relative"
+            className="relative w-full rounded-md bg-slate-50 pb-2 shadow-md"
           >
             <ListHeader list={list} index={index} />
             <Droppable droppableId={list.id} type="card">
@@ -25,7 +25,7 @@ const ListItem = ({ list, index }: { list: List; index: number }) => {
                   {...provided.droppableProps}
                   ref={provided.innerRef}
                   className={cn(
-                    "mx-1 px-1 py-0.5 flex flex-col gap-y-2 rounded-md",
+                    "mx-1 flex flex-col gap-y-2 rounded-md px-1 py-0.5",
                     list?.cards?.length > 0 ? "mt-2" : "mt-0"
                   )}
                 >

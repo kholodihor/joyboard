@@ -1,7 +1,7 @@
 import React, { forwardRef } from "react";
-import { Label } from "../ui/label";
-import { Input } from "../ui/input";
 import { cn } from "@/lib/utils";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
 
 interface InputProps {
   id: string;
@@ -17,7 +17,7 @@ const InputForm = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div>
         <div>
-          <Label htmlFor={id} className="font-medium text-gray-600 mb-2">
+          <Label htmlFor={id} className="mb-2 font-medium text-gray-600">
             {label}
           </Label>
           <Input
@@ -27,7 +27,7 @@ const InputForm = forwardRef<HTMLInputElement, InputProps>(
             defaultValue={defaultValue}
             placeholder={placeholder}
             type={type}
-            className={cn("text-sm px-2 py-1 h-7", className)}
+            className={cn("h-7 px-2 py-1 text-sm", className)}
           />
         </div>
       </div>

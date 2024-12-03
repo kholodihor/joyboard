@@ -1,6 +1,6 @@
 import { useParams } from "next/navigation";
-import { updateCard } from "@/app/actions/card";
 import { toast } from "sonner";
+import { updateCard } from "@/app/actions/card";
 import InputForm from "../atomic/InputForm";
 
 interface CardDetails {
@@ -28,13 +28,13 @@ const CardHeader = ({ cardData, setCardData }: CardDetails) => {
   };
 
   return (
-    <div className="flex items-start gap-x-3 my-6 w-full">
+    <div className="my-6 flex w-full items-start gap-x-3">
       <div className="w-full">
         <form action={handleSubmit}>
           <InputForm
             id="title"
             defaultValue={cardData?.title}
-            className="font-semibold text-xl px-1 text-gray-700 bg-transparent border-transparent focus-visible:border-input mb-0.5 truncate relative"
+            className="relative mb-0.5 truncate border-transparent bg-transparent px-1 text-xl font-semibold text-gray-700 focus-visible:border-input"
           />
         </form>
       </div>

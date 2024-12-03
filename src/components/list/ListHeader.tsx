@@ -1,11 +1,12 @@
 "use client";
-import { List } from "@/types";
+
 import React, { useRef, useState } from "react";
-import InputForm from "../atomic/InputForm";
-import { updateList } from "@/app/actions/list";
 import { toast } from "sonner";
-import ListOption from "./ListOption";
+import { updateList } from "@/app/actions/list";
 import { bgColors } from "@/constants/colors";
+import { List } from "@/types";
+import InputForm from "../atomic/InputForm";
+import ListOption from "./ListOption";
 
 const ListHeader = ({ list, index }: { list: List; index: number }) => {
   const [title, setTitle] = useState(list?.title);
@@ -31,7 +32,7 @@ const ListHeader = ({ list, index }: { list: List; index: number }) => {
   };
   return (
     <div
-      className={`px-2 text-sm font-semibold flex justify-between items-center border-b sticky inset-0 h-[2.5rem]`}
+      className={`sticky inset-0 flex h-[2.5rem] items-center justify-between border-b px-2 text-sm font-semibold`}
       style={{ backgroundColor: bgColors[index] }}
     >
       {isEditable ? (
@@ -42,15 +43,14 @@ const ListHeader = ({ list, index }: { list: List; index: number }) => {
             id="title"
             placeholder="Enter List name"
             defaultValue={title}
-            className="px-2 py-1 h-7 font-medium border-transparent text-sm hover:border-input transition truncate 
-            bg-white focus:bg-white"
+            className="h-7 truncate border-transparent bg-white px-2 py-1 text-sm font-medium transition hover:border-input focus:bg-white"
             ref={inputRef}
           />
           <button type="submit" hidden className=""></button>
         </form>
       ) : (
         <div
-          className="w-full tet-sm px-2.5 py-1 h-7 border-transparent font-semibold"
+          className="tet-sm h-7 w-full border-transparent px-2.5 py-1 font-semibold"
           onClick={() => setIsEditable(true)}
         >
           {title.toUpperCase()}

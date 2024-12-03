@@ -1,12 +1,13 @@
 "use client";
-import React, { useState, useRef } from "react";
-import { toast } from "sonner";
-import FormSubmit from "../atomic/FormSubmit";
-import { Button } from "../ui/button";
-import { Plus, X } from "lucide-react";
-import TextAreaForm from "../atomic/TextAreaForm";
+
 import { useParams } from "next/navigation";
+import React, { useRef, useState } from "react";
+import { Plus, X } from "lucide-react";
+import { toast } from "sonner";
 import { createCard } from "@/app/actions/card";
+import FormSubmit from "../atomic/FormSubmit";
+import TextAreaForm from "../atomic/TextAreaForm";
+import { Button } from "../ui/button";
 
 const CreateCard = ({ listId }: { listId: string }) => {
   const formRef = useRef<HTMLFormElement>(null);
@@ -32,14 +33,13 @@ const CreateCard = ({ listId }: { listId: string }) => {
     }
   };
 
-
   if (isEditable) {
     return (
-      <div className="shrink-0 h-full w-[272px] select-none bg-white relative">
+      <div className="relative h-full w-[272px] shrink-0 select-none bg-white">
         <form
           action={handleSubmit}
           ref={formRef}
-          className="m-1 py-0.5 px-1 space-y-4"
+          className="m-1 space-y-4 px-1 py-0.5"
         >
           <div>
             <TextAreaForm id="title" placeholder="List Title" />
@@ -56,13 +56,13 @@ const CreateCard = ({ listId }: { listId: string }) => {
     );
   }
   return (
-    <div className="pt-2 px-2">
+    <div className="px-2 pt-2">
       <Button
-        className="h-auto w-full text-muted-foreground text-sm px-2 py-1.5 bg-white hover:bg-white"
+        className="h-auto w-full bg-white px-2 py-1.5 text-sm text-muted-foreground hover:bg-white"
         onClick={editEnable}
       >
         Create Card
-        <Plus className="h-4 w-4 mr-2" />
+        <Plus className="mr-2 h-4 w-4" />
       </Button>
     </div>
   );

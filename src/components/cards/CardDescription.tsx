@@ -1,13 +1,14 @@
 "use client";
-import { updateCard } from "@/app/actions/card";
+
 import { useParams } from "next/navigation";
 import React, { useState } from "react";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 import { toast } from "sonner";
+import { updateCard } from "@/app/actions/card";
 // import TextAreaForm from "../atomic/TextAreaForm";
 import FormSubmit from "../atomic/FormSubmit";
 import { Button } from "../ui/button";
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
 
 interface CardDetails {
   cardData: any;
@@ -17,9 +18,9 @@ interface CardDetails {
 const CardDescription = ({ cardData, setCardData }: CardDetails) => {
   const { boardId }: { boardId: string } = useParams();
   const [isEditable, setIsEditable] = useState(false);
-  const [editorValue, setEditorValue] = useState(cardData?.description || '');
+  const [editorValue, setEditorValue] = useState(cardData?.description || "");
 
-  console.log(editorValue)
+  console.log(editorValue);
 
   const handleSubmit = async () => {
     // const description = data.get("description") as string;
@@ -40,7 +41,7 @@ const CardDescription = ({ cardData, setCardData }: CardDetails) => {
   return (
     <div className="mb-[1rem]">
       <div>
-        <p className="font-bold text-slate-700 cursor-pointer flex gap-2 items-center">
+        <p className="flex cursor-pointer items-center gap-2 font-bold text-slate-700">
           Description
         </p>
         <div className={`mt-5`}>
@@ -56,9 +57,9 @@ const CardDescription = ({ cardData, setCardData }: CardDetails) => {
                 value={editorValue}
                 onChange={setEditorValue}
                 placeholder="Add more details"
-                className="w-full mt-2"
+                className="mt-2 w-full"
               />
-              <div className="flex justify-between items-center">
+              <div className="flex items-center justify-between">
                 <FormSubmit>Save</FormSubmit>
                 <Button
                   type="button"
@@ -73,7 +74,7 @@ const CardDescription = ({ cardData, setCardData }: CardDetails) => {
           ) : (
             <div
               role="button"
-              className="min-h-20 pl-6 max-h-70 bg-slate-100 text-sm p-3 rounded-ms overflow-auto"
+              className="max-h-70 rounded-ms min-h-20 overflow-auto bg-slate-100 p-3 pl-6 text-sm"
               onClick={() => setIsEditable(true)}
               dangerouslySetInnerHTML={{ __html: editorValue }}
             >

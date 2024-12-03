@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Card } from "@/types";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import { Calendar } from "../ui/calendar";
-import { updateCardDate } from "@/app/actions/card";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { updateCardDate } from "@/app/actions/card";
+import { Card } from "@/types";
+import { Calendar } from "../ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 
 interface CardProps {
   card: Card;
@@ -30,19 +30,17 @@ const AddCardDate = ({ card }: CardProps) => {
   return (
     <Popover>
       <PopoverTrigger>
-        <div
-          className="px-9 py-[0.4rem] rounded-md w-full min-w-[9rem] bg-gray-200 hover:bg-gray-200 text-gray-700"
-        >
+        <div className="w-full min-w-[9rem] rounded-md bg-gray-200 px-9 py-[0.4rem] text-gray-700 hover:bg-gray-200">
           Date
         </div>
       </PopoverTrigger>
       <PopoverContent
         align="start"
-        className="w-80 pt-3 z-50 bg-white"
+        className="z-50 w-80 bg-white pt-3"
         side="right"
         sideOffset={5}
       >
-        <div className="text-sm font-medium text-center text-neutral-600 pb-2">
+        <div className="pb-2 text-center text-sm font-medium text-neutral-600">
           Add Date
         </div>
         <div>

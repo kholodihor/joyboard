@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState, useRef } from "react";
-import { Button } from "../ui/button";
+import React, { useRef, useState } from "react";
 import { Plus, X } from "lucide-react";
-import InputForm from "../atomic/InputForm";
-import FormSubmit from "../atomic/FormSubmit";
 import { toast } from "sonner";
 import { createLists } from "@/app/actions/list";
+import FormSubmit from "../atomic/FormSubmit";
+import InputForm from "../atomic/InputForm";
+import { Button } from "../ui/button";
 
 const CreateList = ({ boardId }: { boardId: string }) => {
   const formRef = useRef<HTMLFormElement>(null);
@@ -32,11 +32,11 @@ const CreateList = ({ boardId }: { boardId: string }) => {
 
   if (isEditable) {
     return (
-      <li className="shrink-0 h-full w-[272px] select-none relative">
+      <li className="relative h-full w-[272px] shrink-0 select-none">
         <form
           ref={formRef}
           action={handleSubmit}
-          className="bg-white rounded-md space-y-4 shadow-lg p-3"
+          className="space-y-4 rounded-md bg-white p-3 shadow-lg"
         >
           <div>
             <InputForm id="title" label="List Title" type="text" />
@@ -44,7 +44,7 @@ const CreateList = ({ boardId }: { boardId: string }) => {
           </div>
         </form>
         <Button
-          className="absolute bottom-[10%]  right-0 bg-white text-black hover:bg-white"
+          className="absolute bottom-[10%] right-0 bg-white text-black hover:bg-white"
           onClick={() => setIsEditable(false)}
         >
           <X className="h-4 w-4" />
@@ -53,13 +53,13 @@ const CreateList = ({ boardId }: { boardId: string }) => {
     );
   }
   return (
-    <li className="shrink-0 h-full w-[272px] select-none">
+    <li className="h-full w-[272px] shrink-0 select-none">
       <Button
-        className="w-full rounded-lg bg-white text-black hover:bg-slate-100 text-sm transition p-4  flex justify-between"
+        className="flex w-full justify-between rounded-lg bg-white p-4 text-sm text-black transition hover:bg-slate-100"
         onClick={editEnable}
       >
         Create List
-        <Plus className="h-4 w-4 mr-2" />
+        <Plus className="mr-2 h-4 w-4" />
       </Button>
     </li>
   );

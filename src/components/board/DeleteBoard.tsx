@@ -1,5 +1,10 @@
 "use client";
-import React from "react";
+
+import { useRouter } from "next/navigation";
+import { MoreHorizontal } from "lucide-react";
+import { toast } from "sonner";
+import { deleteBoard } from "@/app/actions/board";
+import { Board } from "@/types";
 import {
   Sheet,
   SheetClose,
@@ -11,19 +16,21 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Button } from "../ui/button";
-import { MoreHorizontal } from "lucide-react";
-import { toast } from "sonner";
-import { deleteBoard } from "@/app/actions/board";
-import { Board } from "@/types";
 
 const DeleteBoard = ({ board }: { board: Board }) => {
+  const router = useRouter();
+
   const handleDelete = async () => {
     const data = { id: board.id };
-    const result: any = await deleteBoard(data);
-    if (result?.error) {
-      toast.error("board not deleted");
+    if (confirm("Are you sure you want to delete this board?")) {
+      const result: any = await deleteBoard(data);
+      if (result?.error) {
+        toast.error("board not deleted");
+      }
+      router.push("/boards");
     }
   };
+
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -40,7 +47,7 @@ const DeleteBoard = ({ board }: { board: Board }) => {
           <SheetClose asChild>
             <Button
               type="submit"
-              className="bg-red-500 text-white mt-5"
+              className="mt-5 bg-red-500 text-white"
               onClick={handleDelete}
             >
               Delete this board

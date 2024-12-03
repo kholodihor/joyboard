@@ -1,9 +1,10 @@
 "use client";
+
+import { useRouter } from "next/navigation";
+import { updateCardLabel } from "@/app/actions/card";
+import { labels } from "@/constants/labels";
 import { Card, LabelData } from "@/types";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import { updateCardLabel } from "@/app/actions/card";
-import { useRouter } from "next/navigation";
-import { labels } from "@/constants/labels";
 
 interface CardProps {
   card: Card;
@@ -32,26 +33,24 @@ const AddCardLabel = ({ card }: CardProps) => {
   return (
     <Popover>
       <PopoverTrigger>
-        <div
-          className="px-9 py-[0.4rem] rounded-md w-full min-w-[9rem] bg-gray-200 hover:bg-gray-200 text-gray-700"
-        >
+        <div className="w-full min-w-[9rem] rounded-md bg-gray-200 px-9 py-[0.4rem] text-gray-700 hover:bg-gray-200">
           Label
         </div>
       </PopoverTrigger>
       <PopoverContent
         align="start"
-        className="w-80 pt-3 z-50 bg-white"
+        className="z-50 w-80 bg-white pt-3"
         side="bottom"
         sideOffset={18}
       >
-        <div className="text-sm font-medium text-center text-neutral-600 pb-2">
+        <div className="pb-2 text-center text-sm font-medium text-neutral-600">
           Add Label
         </div>
         <div>
           {labels?.map((label: LabelData) => (
             <div
               key={label.id}
-              className={`w-full mx-auto flex justify-between items-center h-6 my-2 p-2`}
+              className={`mx-auto my-2 flex h-6 w-full items-center justify-between p-2`}
               style={{ backgroundColor: label.color }}
             >
               <input

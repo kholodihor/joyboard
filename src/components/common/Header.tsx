@@ -1,15 +1,16 @@
 "use client";
 
-import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
+import { signOut, useSession } from "next-auth/react";
 
 const Header = () => {
-  const { status } = useSession();
+  const session = useSession();
+  console.log(session);
   return (
     <header className="bg-[url(/header-bg.jpg)] shadow">
       <nav className="mx-auto flex max-w-7xl items-center justify-between p-4 lg:px-8">
-        <Link href="/" className="-m-1.5 p-1.5 flex items-center gap-2">
+        <Link href="/" className="-m-1.5 flex items-center gap-2 p-1.5">
           <Image
             src="/logo.jpg"
             className="h-10 w-auto"
@@ -17,10 +18,10 @@ const Header = () => {
             width={30}
             height={30}
           />
-          <span className="font-bold text-xl">JoyBoard</span>
+          <span className="text-xl font-bold">JoyBoard</span>
         </Link>
 
-        {status !== "authenticated" ? (
+        {session.status !== "authenticated" ? (
           <Link
             href="/login"
             className="text-md font-semibold leading-6 text-gray-900"
@@ -31,7 +32,7 @@ const Header = () => {
           <div className="flex items-center gap-4">
             <Link
               href="/boards"
-              className="text-md font-semibold leading-6 text-gray-900"
+              className="text-md font-semibold leading-6 text-gray-900 hover:underline"
             >
               Boards
             </Link>
@@ -40,10 +41,18 @@ const Header = () => {
                 event.preventDefault();
                 signOut();
               }}
-              className="font-semibold text-md cursor-pointer"
+              className="text-md cursor-pointer font-semibold hover:text-red-700"
             >
               Logout
             </div>
+            <Image
+              src={session.data.user?.image || "/logo.jpg"}
+              className="h-8 w-8 cursor-pointer rounded-full"
+              width={30}
+              height={30}
+              alt={session.data.user?.name || "user"}
+              title={session.data.user?.name || "User"}
+            />
           </div>
         )}
       </nav>

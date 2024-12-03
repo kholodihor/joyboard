@@ -1,17 +1,32 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { Card, User } from "@/types";
-import { Draggable } from "@hello-pangea/dnd";
-import React, { useState } from "react";
-import CardModal from "./CardModal";
-import { labels } from "@/constants/labels";
-import { FiMessageCircle } from "react-icons/fi";
-import { FaTools } from "react-icons/fa";
-import { GoPaperclip } from "react-icons/go";
+
 import Image from "next/image";
-import CardDate from "./CardDate";
 import { useParams } from "next/navigation";
+import React, { useState } from "react";
+import { Draggable } from "@hello-pangea/dnd";
+import { FaTools } from "react-icons/fa";
+import { FiMessageCircle } from "react-icons/fi";
+import { GoPaperclip } from "react-icons/go";
+import { labels } from "@/constants/labels";
+import { Card, User } from "@/types";
+import CardDate from "./CardDate";
+import CardModal from "./CardModal";
 import TimeTracker from "./TimeTracker";
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 const getColor = (id: string) => {
   const foundLabel = labels.find((label) => label.id === id);
@@ -39,18 +54,18 @@ const CardItem = ({ card, index }: { card: Card; index: number }) => {
             ref={provided.innerRef}
             onClick={handleModal}
             role="button"
-            className="py-2 px-3 text-sm rounded-md bg-white shadow-md font-bold overflow-x-hidden"
+            className="overflow-x-hidden rounded-md bg-white px-3 py-2 text-sm font-bold shadow-md"
           >
-            <div className="mb-2 flex justify-between items-center gap-2">
+            <div className="mb-2 flex items-center justify-between gap-2">
               {card?.label?.map((item: any) => (
                 <div className="flex gap-2" key={item}>
                   <div
-                    className="w-8 h-2 rounded-md"
+                    className="h-2 w-8 rounded-md"
                     style={{ backgroundColor: getColor(item) }}
                   ></div>
                 </div>
               ))}
-              <div className="flex gap-[2px] flex-1 justify-end">
+              <div className="flex flex-1 justify-end gap-[2px]">
                 {card?.users?.slice(0, 2).map((user: User) => (
                   <div className="" key={user.id} title={user?.name}>
                     <Image
@@ -66,22 +81,22 @@ const CardItem = ({ card, index }: { card: Card; index: number }) => {
               </div>
             </div>
             {card.title}
-            <div className="mt-3 flex justify-between items-center gap-2">
+            <div className="mt-3 flex items-center justify-between gap-2">
               <div className="flex gap-2">
                 {card && card?.links.length ? (
-                  <div className="flex gap-[5px] items-center text-sm text-slate-600">
+                  <div className="flex items-center gap-[5px] text-sm text-slate-600">
                     <GoPaperclip />
                     {card?.links?.length}
                   </div>
                 ) : null}
                 {card && card?.comments.length ? (
-                  <div className="flex gap-[5px] items-center text-sm text-slate-600">
+                  <div className="flex items-center gap-[5px] text-sm text-slate-600">
                     <FiMessageCircle />
                     {card?.comments?.length}
                   </div>
                 ) : null}
                 {card && card?.todos.length ? (
-                  <div className="flex gap-[5px] items-center text-sm text-slate-600">
+                  <div className="flex items-center gap-[5px] text-sm text-slate-600">
                     <FaTools />
                     {card?.todos?.length}
                   </div>
@@ -96,11 +111,11 @@ const CardItem = ({ card, index }: { card: Card; index: number }) => {
                 </div>
               </div>
             </div>
-            <div onMouseEnter={() => setIsModalAllowed(false)}
-              onMouseLeave={() => setIsModalAllowed(true)}>
-              {card ? (
-                <TimeTracker cardData={card} />
-              ) : null}
+            <div
+              onMouseEnter={() => setIsModalAllowed(false)}
+              onMouseLeave={() => setIsModalAllowed(true)}
+            >
+              {card ? <TimeTracker cardData={card} /> : null}
             </div>
           </div>
         )}

@@ -1,6 +1,6 @@
-import LargeLoader from "@/components/common/LargeLoader";
-import { prisma } from "@/lib/prisma";
 import dynamic from "next/dynamic";
+import { prisma } from "@/lib/prisma";
+import LargeLoader from "@/components/common/LargeLoader";
 
 const DynamicPage = dynamic(
   () => import("@/components/list/ListContainer"),
@@ -27,7 +27,7 @@ const BoardPage = async ({ params }: { params: { boardId: string } }) => {
   });
 
   return (
-    <div className="p-4 w-full overflow-x-auto no-scrollbar">
+    <div className="no-scrollbar w-full overflow-x-auto p-4">
       <DynamicPage boardId={params.boardId} list={list} />
     </div>
   );

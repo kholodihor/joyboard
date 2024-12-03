@@ -1,13 +1,13 @@
 "use client";
 
-import { Card } from "@/types";
-import { Button } from "../ui/button";
-import { copyCard, deleteCard } from "@/app/actions/card";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
-import AddCardMember from "./AddCardMember";
-import AddCardLabel from "./AddCardLabel";
+import { copyCard, deleteCard } from "@/app/actions/card";
+import { Card } from "@/types";
+import { Button } from "../ui/button";
 import AddCardDate from "./AddCardDate";
+import AddCardLabel from "./AddCardLabel";
+import AddCardMember from "./AddCardMember";
 
 const CardActions = ({ cardData }: { cardData: Card }) => {
   const { boardId }: { boardId: string } = useParams();
@@ -35,20 +35,20 @@ const CardActions = ({ cardData }: { cardData: Card }) => {
     }
   };
   return (
-    <div className="space-y-2 mt-2">
-      <p className="font-bold text-sm">Actions</p>
+    <div className="mt-2 space-y-2">
+      <p className="text-sm font-bold">Actions</p>
       <AddCardMember card={cardData} boardId={boardId} />
       <AddCardLabel card={cardData} boardId={boardId} />
       <AddCardDate card={cardData} boardId={boardId} />
       <Button
-        className="w-full bg-gray-200 hover:bg-gray-200 text-gray-700"
+        className="w-full bg-gray-200 text-gray-700 hover:bg-gray-200"
         size="sm"
         onClick={handleCopy}
       >
         Copy
       </Button>
       <Button
-        className="w-full bg-gray-200 hover:bg-gray-200 text-gray-700"
+        className="w-full bg-gray-200 text-gray-700 hover:bg-gray-200"
         size="sm"
         onClick={handleDelete}
       >

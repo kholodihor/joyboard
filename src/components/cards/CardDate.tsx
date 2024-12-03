@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Card } from "@/types";
+import React, { useEffect, useState } from "react";
 import { updateCardIsCompleted } from "@/app/actions/card";
+import { Card } from "@/types";
 import {
   formatDate,
-  isLessThan24Hours,
   isDateInPast,
+  isLessThan24Hours,
   isToday,
 } from "@/utils/date";
 
@@ -52,18 +52,19 @@ const CardDate = ({ cardData }: CardProps) => {
     handleIsCompleted();
   }, [isCompleted]);
 
-  console.log(isCompleted)
+  console.log(isCompleted);
 
   return (
     <div
-      className={`flex items-center justify-start gap-2 text-xs border px-2 py-1 ${isIn24Hours
-        ? "bg-yellow-300"
-        : isOutdated
-          ? "bg-red-300"
-          : isCompleted
-            ? "bg-green-300"
-            : "bg-transparent"
-        } `}
+      className={`flex items-center justify-start gap-2 border px-2 py-1 text-xs ${
+        isIn24Hours
+          ? "bg-yellow-300"
+          : isOutdated
+            ? "bg-red-300"
+            : isCompleted
+              ? "bg-green-300"
+              : "bg-transparent"
+      } `}
     >
       <input
         type="checkbox"
