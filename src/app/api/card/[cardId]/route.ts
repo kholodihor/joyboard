@@ -2,10 +2,8 @@ import { NextResponse } from "next/server";
 import { getAuthSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-export const GET = async (
-  req: Request,
-  { params }: { params: { cardId: string } }
-) => {
+export const GET = async (req: Request, props: { params: Promise<{ cardId: string }> }) => {
+  const params = await props.params;
   try {
     const session = await getAuthSession();
 

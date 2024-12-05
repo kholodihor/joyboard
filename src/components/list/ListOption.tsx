@@ -1,16 +1,14 @@
 "use client";
 
-import React from "react";
-import { MoreHorizontal } from "lucide-react";
-import { toast } from "sonner";
 import { listCopy, listDelete } from "@/app/actions/list";
-import { List } from "@/types";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import FormSubmit from "../atomic/FormSubmit";
+import { List } from "@/types";
+import { MoreHorizontal } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { Separator } from "../ui/separator";
 
@@ -46,30 +44,27 @@ const ListOption = ({ list }: { list: List }) => {
   };
   return (
     <Popover>
-      <PopoverTrigger>
-        <Button className="" variant="ghost">
+      <PopoverTrigger asChild>
+        <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
           <MoreHorizontal className="h-4 w-4" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="bg-white px-0">
+      <PopoverContent className="w-48 p-0">
+        <Button
+          variant="ghost"
+          className="w-full justify-start rounded-none px-5 py-2 text-sm font-normal"
+          onClick={copyList}
+        >
+          Copy List
+        </Button>
         <Separator />
-        <form action={copyList}>
-          <FormSubmit
-            variant="ghost"
-            className="tet-sm h-auto w-full rounded-none px-5 py-2"
-          >
-            Copy List
-          </FormSubmit>
-        </form>
-        <Separator />
-        <form action={deleteList}>
-          <FormSubmit
-            variant="ghost"
-            className="tet-sm h-auto w-full rounded-none px-5 py-2"
-          >
-            Delete List
-          </FormSubmit>
-        </form>
+        <Button
+          variant="ghost"
+          className="w-full justify-start rounded-none px-5 py-2 text-sm font-normal"
+          onClick={deleteList}
+        >
+          Delete List
+        </Button>
       </PopoverContent>
     </Popover>
   );

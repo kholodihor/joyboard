@@ -1,13 +1,18 @@
 import { prisma } from "@/lib/prisma";
 import BoardNavbar from "@/components/board/BoardNavbar";
 
-const BoardLayout = async ({
-  children,
-  params,
-}: {
-  children: React.ReactNode;
-  params: { boardId: string };
-}) => {
+const BoardLayout = async (
+  props: {
+    children: React.ReactNode;
+    params: Promise<{ boardId: string }>;
+  }
+) => {
+  const params = await props.params;
+
+  const {
+    children
+  } = props;
+
   const board: any = await prisma.board.findUnique({
     where: { id: params.boardId },
     include: { Users: true },

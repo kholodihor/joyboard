@@ -1,16 +1,17 @@
-import dynamic from "next/dynamic";
 import { prisma } from "@/lib/prisma";
-import LargeLoader from "@/components/common/LargeLoader";
+import ClientBoardPage from "./client-board-page";
 
-const DynamicPage = dynamic(
-  () => import("@/components/list/ListContainer"),
+interface BoardPageProps {
+  params: Promise<{
+    boardId: string;
+  }>;
+}
 
-  { ssr: false, loading: () => <LargeLoader /> }
-);
+const BoardPage = async ({ params }: BoardPageProps) => {
+  const { boardId } = await params;
 
-const BoardPage = async ({ params }: { params: { boardId: string } }) => {
   const list = await prisma.list.findMany({
-    where: { boardId: params.boardId },
+    where: { boardId: boardId },
     include: {
       cards: {
         orderBy: {
@@ -26,11 +27,7 @@ const BoardPage = async ({ params }: { params: { boardId: string } }) => {
     },
   });
 
-  return (
-    <div className="no-scrollbar w-full overflow-x-auto p-4">
-      <DynamicPage boardId={params.boardId} list={list} />
-    </div>
-  );
+  return <ClientBoardPage boardId={boardId} list={list} />;
 };
 
 export default BoardPage;

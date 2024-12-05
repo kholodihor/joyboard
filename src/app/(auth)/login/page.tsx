@@ -1,9 +1,9 @@
 "use client";
 
+import { signIn, useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { signIn, useSession } from "next-auth/react";
 
 const Login = () => {
   const router = useRouter();
@@ -17,7 +17,7 @@ const Login = () => {
     <div className="grid h-screen place-content-center bg-[url(/login-bg.jpg)] bg-cover">
       <div className="flex h-[50vh] w-[400px] flex-col items-center justify-center gap-5 bg-yellow-400 shadow-md">
         <div className="flex items-center gap-2">
-          <Image src="/logo.png" className="h-10 w-auto" alt="logo" />
+          <Image src="/logo.png" className="h-10 w-auto" width={100} height={100} alt="logo" />
           <span className="text-xl font-bold">JoyBoard</span>
         </div>
         <p className="text-md font-bold">Log in to continue</p>
@@ -27,7 +27,7 @@ const Login = () => {
         >
           <Image
             className="h-5 w-5"
-            src="https://w7.pngwing.com/pngs/326/85/png-transparent-google-logo-google-text-trademark-logo-thumbnail.png"
+            src="/google.png"
             alt=""
             width={5}
             height={5}
