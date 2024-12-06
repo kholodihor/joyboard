@@ -1,14 +1,14 @@
 "use client";
 
+import { updateCard } from "@/app/actions/card";
 import { useParams } from "next/navigation";
 import React, { useState } from "react";
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
 import { toast } from "sonner";
-import { updateCard } from "@/app/actions/card";
 // import TextAreaForm from "../atomic/TextAreaForm";
 import FormSubmit from "../atomic/FormSubmit";
 import { Button } from "../ui/button";
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 interface CardDetails {
   cardData: any;
@@ -18,35 +18,34 @@ interface CardDetails {
 const CardDescription = ({ cardData, setCardData }: CardDetails) => {
   const { boardId }: { boardId: string } = useParams();
   const [isEditable, setIsEditable] = useState(false);
-  const [editorValue, setEditorValue] = useState(cardData?.description || "");
+  const [editorValue, setEditorValue] = useState(cardData?.description || '');
 
-  console.log(editorValue);
-
-  const handleSubmit = async () => {
-    // const description = data.get("description") as string;
-    const res = await updateCard({
-      description: editorValue,
-      boardId,
-      id: cardData?.id,
-    });
-    if (res?.result) {
-      setCardData(res.result);
-      toast.success("Card successfully udpated");
-    }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault(); // Prevent default form submission
     try {
+      const res = await updateCard({
+        description: editorValue,
+        boardId,
+        id: cardData?.id,
+      });
+      if (res?.result) {
+        setCardData(res.result);
+        toast.success("Card successfully updated");
+      }
     } catch (error) {
-      toast.error("Card not udpated");
+      toast.error("Card not updated");
     }
   };
+
   return (
     <div className="mb-[1rem]">
       <div>
-        <p className="flex cursor-pointer items-center gap-2 font-bold text-slate-700">
+        <p className="font-bold text-slate-700 cursor-pointer flex gap-2 items-center">
           Description
         </p>
         <div className={`mt-5`}>
           {isEditable ? (
-            <form action={handleSubmit} className="space-y-2">
+            <form onSubmit={handleSubmit} className="space-y-2">
               {/* <TextAreaForm
                 id="description"
                 className="w-full mt-2"
@@ -57,9 +56,9 @@ const CardDescription = ({ cardData, setCardData }: CardDetails) => {
                 value={editorValue}
                 onChange={setEditorValue}
                 placeholder="Add more details"
-                className="mt-2 w-full"
+                className="w-full mt-2"
               />
-              <div className="flex items-center justify-between">
+              <div className="flex justify-between items-center">
                 <FormSubmit>Save</FormSubmit>
                 <Button
                   type="button"
@@ -74,7 +73,7 @@ const CardDescription = ({ cardData, setCardData }: CardDetails) => {
           ) : (
             <div
               role="button"
-              className="max-h-70 rounded-ms min-h-20 overflow-auto bg-slate-100 p-3 pl-6 text-sm"
+              className="min-h-20 pl-6 max-h-70 bg-slate-100 text-sm p-3 rounded-ms overflow-auto"
               onClick={() => setIsEditable(true)}
               dangerouslySetInnerHTML={{ __html: editorValue }}
             >

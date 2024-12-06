@@ -1,10 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import React, { useEffect, useState } from "react";
-import { addCardMember, getNoCardMembers } from "@/app/actions/card";
 import { Card, User } from "@/types";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { addCardMember, getNoCardMembers } from "@/app/actions/card";
+import Image from "next/image";
 
 interface CardProps {
   card: Card;
@@ -26,54 +26,48 @@ const AddCardMember = ({ card, boardId }: CardProps) => {
 
   const handleSubmit = async (user: any) => {
     if (user && card) {
-      const updatedUser = {
-        ...user,
-        cardIds: [...(user.cardIds || []), card.id],
-      };
-      const updatedCard = {
-        ...card,
-        userIds: [...(card.userIds || []), user.id],
-      };
+      const updatedUser = { ...user, cardIds: [...(user.cardIds || []), card.id] };
+      const updatedCard = { ...card, userIds: [...(card.userIds || []), user.id] };
 
-      setMembers((prevMembers) =>
-        prevMembers?.filter((item: User) => item?.id !== user.id)
-      );
+      setMembers((prevMembers) => prevMembers?.filter((item: User) => item?.id !== user.id));
 
       await addCardMember({
         user: updatedUser,
         card: updatedCard,
       });
 
-      window.location.reload();
+      // window.location.reload();
     }
   };
 
   return (
     <Popover>
       <PopoverTrigger>
-        <div className="w-full min-w-[9rem] rounded-md bg-gray-200 px-9 py-[0.4rem] text-gray-700 hover:bg-gray-200">
+        <div
+          className="px-9 py-[0.4rem] rounded-md w-full min-w-[9rem] bg-gray-200 hover:bg-gray-200 text-gray-700"
+        >
           Members
         </div>
       </PopoverTrigger>
       <PopoverContent
         align="start"
-        className="z-50 w-80 bg-white pt-3"
+        className="w-80 pt-3 z-50 bg-white"
         side="right"
         sideOffset={5}
       >
-        <div className="pb-4 text-center text-sm font-medium text-neutral-600">
+        <div className="text-sm font-medium text-center text-neutral-600 pb-4">
           Add Member
         </div>
         <div className="max-h-80 overflow-auto">
           {members?.map((user: any) => (
             <div
               key={user?.id}
-              className="flex cursor-pointer items-center gap-2 p-2 hover:bg-slate-100"
+              className="flex items-center gap-2 hover:bg-slate-100 p-2 cursor-pointer "
               onClick={() => handleSubmit(user)}
             >
               <Image
                 src={user?.image}
-                className="h-12 w-12 rounded-full object-cover"
+                className="object-cover rounded-full h-12 w-12"
                 alt={user?.name}
                 width={50}
                 height={50}

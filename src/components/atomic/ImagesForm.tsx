@@ -1,20 +1,20 @@
 "use client";
 
-import Image from "next/image";
 import React, { useState } from "react";
-import { Check } from "lucide-react";
+import Image from "next/image";
 import { defaultImages } from "@/constants/images";
+import { Check } from "lucide-react";
 import type { TImage } from "@/types";
 
 const ImagesForm = ({ name }: { name: string }) => {
   const [imageId, setImageId] = useState("");
   return (
     <div className="relative">
-      <div className="mb-2 grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-3 gap-2 mb-2">
         {defaultImages?.map((image: TImage) => (
           <div
             className={
-              "group relative aspect-video cursor-pointer bg-muted transition hover:opacity-75"
+              "cursor-pointer relative aspect-video group hover:opacity-75 transition bg-muted"
             }
             onClick={() => setImageId(image.id)}
             key={image.id}
@@ -30,15 +30,15 @@ const ImagesForm = ({ name }: { name: string }) => {
             <Image
               src={image.image}
               alt={image.name}
-              className="rounded-sm object-cover"
+              className="object-cover rounded-sm"
               fill
             />
             {imageId == image.id && (
-              <div className="absolute inset-y-0 flex h-full w-full items-center justify-center bg-black/40">
+              <div className="absolute inset-y-0 h-full w-full bg-black/40 flex items-center justify-center">
                 <Check className="h-4 w-4 text-white" />
               </div>
             )}
-            <span className="absolute bottom-0 w-full truncate bg-black/50 p-0.5 text-[10px] text-white opacity-0 group-hover:opacity-100">
+            <span className="opacity-0 group-hover:opacity-100 absolute bottom-0 w-full text-[10px] truncate text-white p-0.5 bg-black/50">
               {image.name}
             </span>
           </div>

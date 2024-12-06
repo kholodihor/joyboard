@@ -1,13 +1,13 @@
 "use client";
 
-import { useParams } from "next/navigation";
-import { toast } from "sonner";
-import { copyCard, deleteCard } from "@/app/actions/card";
 import { Card } from "@/types";
 import { Button } from "../ui/button";
-import AddCardDate from "./AddCardDate";
-import AddCardLabel from "./AddCardLabel";
+import { copyCard, deleteCard } from "@/app/actions/card";
+import { useParams } from "next/navigation";
+import { toast } from "sonner";
 import AddCardMember from "./AddCardMember";
+import AddCardLabel from "./AddCardLabel";
+import AddCardDate from "./AddCardDate";
 
 const CardActions = ({ cardData }: { cardData: Card }) => {
   const { boardId }: { boardId: string } = useParams();
@@ -25,30 +25,33 @@ const CardActions = ({ cardData }: { cardData: Card }) => {
   };
 
   const handleDelete = async () => {
-    try {
-      const res = await deleteCard({ id: cardData.id, boardId });
-      if (res.success) {
-        toast.success("Card successfully deleted");
+    if (confirm("Are you sure you want to delete this card?")) {
+      try {
+        const res = await deleteCard({ id: cardData.id, boardId });
+        if (res.success) {
+          toast.success("Card successfully deleted");
+        }
+      } catch (error) {
+        toast.error("Card not deleted");
       }
-    } catch (error) {
-      toast.error("Card not deleted");
     }
   };
+
   return (
-    <div className="mt-2 space-y-2">
-      <p className="text-sm font-bold">Actions</p>
+    <div className="space-y-2 mt-2">
+      <p className="font-bold text-sm">Actions</p>
       <AddCardMember card={cardData} boardId={boardId} />
       <AddCardLabel card={cardData} boardId={boardId} />
       <AddCardDate card={cardData} boardId={boardId} />
       <Button
-        className="w-full bg-gray-200 text-gray-700 hover:bg-gray-200"
+        className="w-full bg-gray-200 hover:bg-gray-200 text-gray-700"
         size="sm"
         onClick={handleCopy}
       >
         Copy
       </Button>
       <Button
-        className="w-full bg-gray-200 text-gray-700 hover:bg-gray-200"
+        className="w-full bg-gray-200 hover:bg-gray-200 text-gray-700"
         size="sm"
         onClick={handleDelete}
       >

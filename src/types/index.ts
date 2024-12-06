@@ -30,15 +30,15 @@ export type List = {
   updatedAt: Date;
 };
 
-export type Todo = {
-  id: string;
-  content: string;
-  completed: boolean;
-};
+export type Todo ={
+  id:string;
+  content:string;
+  completed:boolean
+}
 
 export type Card = {
   id: string;
-  boardId: string;
+  boardId:string;
   title: string;
   order: number;
   description: string;
@@ -50,15 +50,15 @@ export type Card = {
   dateTo: string | Date;
   isCompleted: boolean;
   comments: Comment[];
-  todos: Todo[];
-  links: string[];
+  todos:Todo[]
+  links: string[]
   trackedTimes: string[];
   createdAt: Date;
   updatedAt: Date;
 };
 
 export type Comment = {
-  id: string;
+  id:string;
   text: string;
   image: string;
   user: string;

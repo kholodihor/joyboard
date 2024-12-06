@@ -1,13 +1,18 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { getAuthSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
 import { Board, User } from "@/types";
-import { authenticateUser } from "./helpers/authenticateUser";
 
 export const getAllBoards = async () => {
-  await authenticateUser();
+  const session = await getAuthSession();
+  if (!session) {
+    return {
+      error: "user not found",
+    };
+  }
   try {
     const boards = await prisma.board.findMany();
     return {
@@ -21,8 +26,12 @@ export const getAllBoards = async () => {
 };
 
 export const createBoard = async (data: { title: string; image: string }) => {
-  await authenticateUser();
-
+  const session = await getAuthSession();
+  if (!session) {
+    return {
+      error: "user not found",
+    };
+  }
   const { title, image } = data;
 
   let board;
@@ -42,10 +51,17 @@ export const createBoard = async (data: { title: string; image: string }) => {
   return { result: board };
 };
 
+// delete board
 export const deleteBoard = async ({ id }: { id: string }) => {
-  await authenticateUser();
+  const session = await getAuthSession();
+  if (!session) {
+    return {
+      error: "user not found",
+    };
+  }
+  let board;
   try {
-    const board = await prisma.board.delete({ where: { id } });
+    board = await prisma.board.delete({ where: { id } });
     return { board };
   } catch (error) {
     return {
@@ -54,9 +70,9 @@ export const deleteBoard = async ({ id }: { id: string }) => {
   }
 };
 
+// get member without current board
 export const getNoBoardMembers = async (data: { board: any }) => {
   const session = await getAuthSession();
-
   if (!session) {
     return {
       error: "user not found",
@@ -66,17 +82,19 @@ export const getNoBoardMembers = async (data: { board: any }) => {
   const { board } = data;
 
   try {
+    // Find users who are NOT associated with the given board ID
     const users = await prisma.user.findMany({
       where: {
         boards: {
-          none: { id: board.id },
+          none: { id: board.id },  // Exclude users who have this board ID in their boards
         },
       },
     });
 
+    // Revalidate the board path to ensure fresh data
     revalidatePath(`/board/${board.id}`);
-
     return { result: users };
+
   } catch (error) {
     return {
       error: "board id not exist",
@@ -84,6 +102,7 @@ export const getNoBoardMembers = async (data: { board: any }) => {
   }
 };
 
+// add memeber in board
 export const addMemberInBoard = async (data: { user: User; board: Board }) => {
   const session = getAuthSession();
 
@@ -94,9 +113,7 @@ export const addMemberInBoard = async (data: { user: User; board: Board }) => {
   }
 
   const { user, board } = data;
-
-  let updateUser: any, updateBoard: any;
-
+  let updateUser, updateBoard;
   try {
     [updateUser, updateBoard] = await prisma.$transaction([
       prisma.user.update({
@@ -121,6 +138,7 @@ export const addMemberInBoard = async (data: { user: User; board: Board }) => {
   return { result: { updateUser, updateBoard } };
 };
 
+//get members
 export const getMembersOfBoard = async ({ boardId }: { boardId: string }) => {
   console.log(boardId);
   try {

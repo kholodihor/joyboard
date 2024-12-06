@@ -1,20 +1,20 @@
-import Image from "next/image";
-import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import Image from "next/image";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import CardHeader from "./CardHeader";
 import useSWR from "swr";
+import { fetcher } from "@/lib/fetcher";
+import CardDescription from "./CardDescription";
+import CardActions from "./CardActions";
+import { User } from "@/types";
 import { removeMemberFromCard } from "@/app/actions/card";
 import { labels } from "@/constants/labels";
-import { fetcher } from "@/lib/fetcher";
-import { User } from "@/types";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { Skeleton } from "@/components/ui/skeleton";
-import CardActions from "./CardActions";
 import CardCommentsInput from "./CardCommentsInput";
+import { useParams } from "next/navigation";
 import CardDate from "./CardDate";
-import CardDescription from "./CardDescription";
-import CardHeader from "./CardHeader";
-import CardLinks from "./CardLinks";
+import { Skeleton } from "@/components/ui/skeleton";
 import CardTodo from "./CardTodo";
+import CardLinks from "./CardLinks";
 
 interface CardModel {
   id: string;
@@ -39,10 +39,8 @@ const CardModal = ({ id, isModal, setIsModal }: CardModel) => {
   const removeCardMember = async (user: User) => {
     if (!user || !cardData) return;
 
-    const updatedCardIds =
-      user.cardIds?.filter((id) => id !== cardData.id) || [];
-    const updatedUserIds =
-      cardData.userIds?.filter((id) => id !== user.id) || [];
+    const updatedCardIds = user.cardIds?.filter((id) => id !== cardData.id) || [];
+    const updatedUserIds = cardData.userIds?.filter((id) => id !== user.id) || [];
 
     const updatedUser = { ...user, cardIds: updatedCardIds };
     const updatedCard = { ...cardData, userIds: updatedUserIds };
@@ -54,7 +52,7 @@ const CardModal = ({ id, isModal, setIsModal }: CardModel) => {
     window.location.reload();
   };
 
-  console.log(cardData?.users);
+  console.log(cardData?.users)
 
   return (
     <Dialog open={isModal} onOpenChange={() => setIsModal(false)}>
@@ -62,12 +60,12 @@ const CardModal = ({ id, isModal, setIsModal }: CardModel) => {
         <DialogTitle className="sr-only">Card Details</DialogTitle>
         <CardHeader cardData={cardData} setCardData={setCardData} />
         {cardData ? (
-          <div className="relative grid grid-cols-1 md:grid-cols-4 md:gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 md:gap-4 relative">
             <div className="col-span-3">
               <div className="flex gap-3">
                 {cardData?.users?.map((user: User) => (
                   <div
-                    className="relative after:absolute after:right-[-5px] after:top-[-10px] after:flex after:h-4 after:w-4 after:cursor-pointer after:items-center after:justify-center after:rounded-full after:bg-red-500 after:text-xs after:text-white after:content-['x']"
+                    className="relative after:cursor-pointer after:content-['x'] after:text-xs after:absolute after:right-[-5px] after:top-[-10px] after:bg-red-500 after:h-4 after:w-4 after:flex after:items-center after:justify-center after:text-white after:rounded-full"
                     onClick={() => removeCardMember(user)}
                     key={user.id}
                     title={user?.name}
@@ -85,7 +83,7 @@ const CardModal = ({ id, isModal, setIsModal }: CardModel) => {
                   {cardData?.label?.map((item: any) => (
                     <div className="" key={item}>
                       <div
-                        className="h-4 w-8 rounded-md"
+                        className="w-8 h-4 rounded-md"
                         style={{ backgroundColor: getColor(item) }}
                       ></div>
                     </div>
@@ -95,7 +93,9 @@ const CardModal = ({ id, isModal, setIsModal }: CardModel) => {
                   <CardDate cardData={cardData} boardId={boardId} />
                 ) : null}
               </div>
-              <div></div>
+              <div>
+
+              </div>
 
               <div className="mt-10">
                 <CardDescription

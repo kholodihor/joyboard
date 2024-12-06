@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 
 const LargeLoader = ({ className }: { className?: string }) => {
   return (
-    <div className="backdrop-brightness-20 absolute inset-0 flex h-screen w-full items-center justify-center bg-white/70 backdrop-blur-sm">
+    <div className="absolute inset-0 w-full h-screen flex justify-center items-center backdrop-blur-sm backdrop-brightness-20 bg-white/70">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         width="72"

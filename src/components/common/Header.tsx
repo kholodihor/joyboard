@@ -1,16 +1,15 @@
 "use client";
 
+import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
-import { signOut, useSession } from "next-auth/react";
 
 const Header = () => {
   const session = useSession();
-  console.log(session);
   return (
     <header className="bg-[url(/header-bg.jpg)] shadow">
       <nav className="mx-auto flex max-w-7xl items-center justify-between p-4 lg:px-8">
-        <Link href="/" className="-m-1.5 flex items-center gap-2 p-1.5">
+        <Link href="/" className="-m-1.5 p-1.5 flex items-center gap-2">
           <Image
             src="/logo.jpg"
             className="h-10 w-auto"
@@ -18,7 +17,7 @@ const Header = () => {
             width={30}
             height={30}
           />
-          <span className="text-xl font-bold">JoyBoard</span>
+          <span className="font-bold text-xl">JoyBoard</span>
         </Link>
 
         {session.status !== "authenticated" ? (
@@ -32,7 +31,7 @@ const Header = () => {
           <div className="flex items-center gap-4">
             <Link
               href="/boards"
-              className="text-md font-semibold leading-6 text-gray-900 hover:underline"
+              className="text-md font-semibold leading-6 text-gray-900"
             >
               Boards
             </Link>
@@ -41,7 +40,7 @@ const Header = () => {
                 event.preventDefault();
                 signOut();
               }}
-              className="text-md cursor-pointer font-semibold hover:text-red-700"
+              className="font-semibold text-md cursor-pointer"
             >
               Logout
             </div>

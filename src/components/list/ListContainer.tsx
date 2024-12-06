@@ -1,12 +1,12 @@
 "use client";
 
+import { List } from "@/types";
 import React, { useEffect, useState } from "react";
 import { DragDropContext, Droppable } from "@hello-pangea/dnd";
-import { reorderCard } from "@/app/actions/card";
-import { reorderList } from "@/app/actions/list";
-import { List } from "@/types";
-import CreateList from "./CreateList";
 import ListItem from "./ListItem";
+import CreateList from "./CreateList";
+import { reorderList } from "@/app/actions/list";
+import { reorderCard } from "@/app/actions/card";
 
 interface ListProps {
   boardId: string;
@@ -99,7 +99,7 @@ const ListContainer = ({ boardId, list }: ListProps) => {
           <ol
             {...provided.droppableProps}
             ref={provided.innerRef}
-            className="flex h-full min-h-[75vh] w-full gap-x-3"
+            className="flex gap-x-3 h-full min-h-[75vh] w-full"
           >
             {listData?.map((list: List, index: number) => (
               <ListItem key={list.id} list={list} index={index} />

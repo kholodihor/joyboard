@@ -1,19 +1,14 @@
 "use client";
-
 import { useEffect, useRef } from "react";
+import { addCardTodo, changeTodoCompleted, removeCardTodo } from "@/app/actions/card";
 import React, { useState } from "react";
-import { FaRegTrashCan } from "react-icons/fa6";
 import { toast } from "sonner";
-import {
-  addCardTodo,
-  changeTodoCompleted,
-  removeCardTodo,
-} from "@/app/actions/card";
-import { Card, Todo } from "@/types";
-import FormSubmit from "../atomic/FormSubmit";
 import TextAreaForm from "../atomic/TextAreaForm";
+import FormSubmit from "../atomic/FormSubmit";
 import { Button } from "../ui/button";
+import { Card, Todo } from "@/types";
 import { Skeleton } from "../ui/skeleton";
+import { FaRegTrashCan } from "react-icons/fa6";
 import SubTitle from "./SubTitle";
 
 interface CardProps {
@@ -28,22 +23,25 @@ const CardTodo = ({ cardData, setCardData }: CardProps) => {
   const [isEditable, setIsEditable] = useState(false);
 
   useEffect(() => {
-    setTodos(cardData.todos);
+    setTodos(cardData?.todos || []); // Ensure empty array if no todos exist
   }, [cardData]);
 
-  const handleSubmit = async (data: FormData) => {
-    const todo = data.get("todo") as string;
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault(); // Prevent the default form submission
+    const formData = new FormData(e.target as HTMLFormElement);
+    const todo = formData.get("todo") as string;
     if (!todo.trim()) {
       toast.error("Todo content cannot be empty");
       return;
     }
+
     try {
       const newTodo = {
         id: crypto.randomUUID(),
         content: todo,
         completed: false,
       };
-      setTodos([...todos, newTodo]);
+      setTodos((prevTodos) => [...prevTodos, newTodo]);
       const updatedCard = {
         ...cardData,
         todos: [...todos, newTodo],
@@ -57,7 +55,7 @@ const CardTodo = ({ cardData, setCardData }: CardProps) => {
         toast.success("Your todo added to card");
       }
     } catch (error) {
-      toast.error("Fail to add todo");
+      toast.error("Failed to add todo");
     }
   };
 
@@ -71,7 +69,6 @@ const CardTodo = ({ cardData, setCardData }: CardProps) => {
         card: cardData,
       });
       if (res?.success) {
-        console.log(res.result);
         setCardData(res.result);
         setTodos(res.result.todos);
         toast.success("Todo status updated");
@@ -111,26 +108,16 @@ const CardTodo = ({ cardData, setCardData }: CardProps) => {
   return (
     <div className="mb-[1rem]">
       <div>
-        <SubTitle
-          title="Todos"
-          isOpen={isOpen}
-          setIsOpen={setIsOpen}
-          length={todos.length}
-        />
+        <SubTitle title="Todos" isOpen={isOpen} setIsOpen={setIsOpen} length={todos.length} />
         <div
-          className={`no-scrollbar max-h-[40vh] overflow-auto ${
-            isOpen ? "block" : "hidden"
-          }`}
+          className={`max-h-[40vh] overflow-auto no-scrollbar ${isOpen ? "block" : "hidden"}`}
         >
           <div className="my-2">
-            {todos ? (
-              todos?.map((todo: Todo, index: number) => (
-                <div
-                  key={index}
-                  className="mb-2 flex flex-col items-start gap-2 rounded-md bg-input p-2"
-                >
-                  <div className="flex w-full justify-between gap-4">
-                    <div className="flex flex-1 gap-2">
+            {todos.length > 0 ? (
+              todos.map((todo: Todo, index: number) => (
+                <div key={index} className="flex flex-col gap-2 mb-2 bg-input rounded-md items-start p-2">
+                  <div className="flex justify-between gap-4 w-full">
+                    <div className="flex gap-2 flex-1">
                       <input
                         type="checkbox"
                         name="completed"
@@ -140,10 +127,7 @@ const CardTodo = ({ cardData, setCardData }: CardProps) => {
                       />
                       <p className="bg-input p-2 text-xs">{todo.content}</p>
                     </div>
-                    <button
-                      onClick={() => handleRemove(todo.id)}
-                      className="text-red-500"
-                    >
+                    <button onClick={() => handleRemove(todo.id)} className="text-red-500">
                       <FaRegTrashCan />
                     </button>
                   </div>
@@ -159,21 +143,16 @@ const CardTodo = ({ cardData, setCardData }: CardProps) => {
             )}
           </div>
           {isEditable ? (
-            <form action={handleSubmit} className="space-y-2" ref={formRef}>
+            <form onSubmit={handleSubmit} className="space-y-2" ref={formRef}>
               <TextAreaForm
                 id="todo"
-                className="mt-2 w-full"
-                placeholder="Write a comment to card"
+                className="w-full mt-2"
+                placeholder="Write a todo to card"
                 defaultValue={""}
               />
-              <div className="flex items-center justify-between">
+              <div className="flex justify-between items-center">
                 <FormSubmit>Add</FormSubmit>
-                <Button
-                  type="button"
-                  onClick={() => setIsEditable(false)}
-                  size="sm"
-                  variant="ghost"
-                >
+                <Button type="button" onClick={() => setIsEditable(false)} size="sm" variant="ghost">
                   Cancel
                 </Button>
               </div>
@@ -181,7 +160,7 @@ const CardTodo = ({ cardData, setCardData }: CardProps) => {
           ) : (
             <div
               role="button"
-              className="rounded-ms min-h-20 bg-slate-100 p-3 text-sm"
+              className="min-h-20 bg-slate-100 text-sm p-3 rounded-ms"
               onClick={() => setIsEditable(true)}
             >
               {"Write a todo to card"}

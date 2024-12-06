@@ -1,25 +1,20 @@
-import { prisma } from "@/lib/prisma";
 import BoardNavbar from "@/components/board/BoardNavbar";
+import { prisma } from "@/lib/prisma";
 
-const BoardLayout = async (
-  props: {
-    children: React.ReactNode;
-    params: Promise<{ boardId: string }>;
-  }
-) => {
-  const params = await props.params;
-
-  const {
-    children
-  } = props;
-
+const BoardLayout = async ({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: { boardId: string };
+}) => {
   const board: any = await prisma.board.findUnique({
     where: { id: params.boardId },
     include: { Users: true },
   });
   return (
     <div
-      className="relative h-[88vh] bg-cover bg-center bg-no-repeat"
+      className="relative h-[88vh] bg-no-repeat bg-cover bg-center"
       style={{ backgroundImage: `url(${board?.image})` }}
     >
       <BoardNavbar board={board} />
