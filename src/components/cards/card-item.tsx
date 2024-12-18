@@ -27,7 +27,7 @@ const CardItem = ({
   card,
   index,
   // eslint-disable-next-line prettier/prettier
-  onClick = () => { },
+  onClick = () => {},
 }: {
   card: Card;
   index: number;
@@ -67,7 +67,7 @@ const CardItem = ({
             {...provided.draggableProps}
             {...provided.dragHandleProps}
             ref={provided.innerRef}
-            className={`group relative z-0 flex cursor-pointer flex-col rounded-lg border bg-white p-3 shadow-sm hover:shadow-md ${isUpdating && 'pointer-events-none opacity-50'}`}
+            className={`group relative z-[1] flex cursor-pointer flex-col rounded-lg border bg-white p-3 shadow-sm hover:shadow-md ${isUpdating && 'pointer-events-none opacity-50'}`}
             onClick={onClick}
           >
             {/* Card Content */}

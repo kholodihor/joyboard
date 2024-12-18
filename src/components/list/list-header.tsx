@@ -42,7 +42,7 @@ const ListHeader = ({ list, index }: { list: List; index: number }) => {
 
   return (
     <div
-      className={`sticky inset-0 flex h-[2.5rem] items-center justify-between border-b px-2 text-sm font-semibold`}
+      className={`sticky top-0 z-10 flex items-center justify-between gap-x-2 bg-slate-50 px-2 py-2`}
       style={{ backgroundColor: bgColors[index] }}
     >
       {isEditable ? (

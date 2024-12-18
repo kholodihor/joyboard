@@ -1,9 +1,9 @@
 export const formatDate = (isoDate: string): string => {
   const date = new Date(isoDate);
 
-  const day = date.getDate().toString().padStart(2, "0"); // Use local date instead of UTC
-  const month = date.toLocaleString("en-US", {
-    month: "short",
+  const day = date.getDate().toString().padStart(2, '0'); // Use local date instead of UTC
+  const month = date.toLocaleString('en-US', {
+    month: 'short',
   }); // Use local month without forcing UTC
 
   // Format the date as "DD MMM"

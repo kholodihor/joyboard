@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -21,6 +21,7 @@
     "@radix-ui/react-popover": "^1.1.1",
     "@radix-ui/react-separator": "^1.1.0",
     "@radix-ui/react-slot": "^1.1.0",
+    "@sentry/nextjs": "^8.46.0",
     "@types/nodemailer": "^6.4.17",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",

@@ -90,15 +90,15 @@ const CardDate = ({ cardData, onCardUpdate }: CardProps) => {
 
   return (
     <div
-      className={`flex items-center justify-start gap-2 border 
-        px-2 py-1 text-xs ${isIn24Hours
+      className={`flex items-center justify-start gap-2 border px-2 py-1 text-xs ${
+        isIn24Hours
           ? 'bg-yellow-300'
           : isOutdated
             ? 'bg-red-300'
             : isCompleted
               ? 'bg-green-300'
               : 'bg-transparent'
-        }`}
+      }`}
     >
       <input
         type="checkbox"
