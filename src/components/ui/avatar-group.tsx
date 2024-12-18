@@ -18,7 +18,11 @@ const sizeClasses = {
   lg: 'h-10 w-10 -ml-4 first:ml-0',
 };
 
-const AvatarGroup = ({ users, max = 2, size = 'sm' }: AvatarGroupProps) => {
+export const AvatarGroup = ({
+  users,
+  max = 2,
+  size = 'sm',
+}: AvatarGroupProps) => {
   const displayUsers = users?.slice(0, max);
   const remaining = users?.length > max ? users.length - max : 0;
   const sizeClass = sizeClasses[size];
@@ -35,24 +39,27 @@ const AvatarGroup = ({ users, max = 2, size = 'sm' }: AvatarGroupProps) => {
           <div className="relative h-full w-full">
             <Image
               src={user.image || '/logo.jpg'}
-              alt={user.name}
+              alt={user.name || 'User'}
               className="rounded-full object-cover"
               fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               unoptimized
               onError={e => {
-                // If image fails to load, show fallback
                 e.currentTarget.style.display = 'none';
               }}
             />
           </div>
-          <AvatarFallback className="text-xs">
-            {user.name?.slice(0, 2).toUpperCase()}
+          <AvatarFallback
+            className="bg-yellow-500 font-medium text-white"
+            delayMs={100}
+          >
+            {user.name?.slice(0, 2).toUpperCase() || '??'}
           </AvatarFallback>
         </Avatar>
       ))}
       {remaining > 0 && (
         <div
-          className={`flex items-center justify-center rounded-full bg-gray-100 text-xs font-medium text-gray-500 ring-2 ring-white ${sizeClass}`}
+          className={`flex items-center justify-center rounded-full bg-yellow-500 text-xs font-medium text-white ring-2 ring-white ${sizeClass}`}
         >
           +{remaining}
         </div>
@@ -60,5 +67,3 @@ const AvatarGroup = ({ users, max = 2, size = 'sm' }: AvatarGroupProps) => {
     </div>
   );
 };
-
-export default AvatarGroup;

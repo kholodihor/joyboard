@@ -56,6 +56,7 @@ const ClientLogin = () => {
         width={300}
         height={300}
         src="/pikachu2.gif"
+        unoptimized={true}
         className="absolute bottom-0 right-0 hidden w-[20%] lg:block"
         alt=""
       />

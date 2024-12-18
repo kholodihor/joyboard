@@ -5,12 +5,12 @@ import { FaTools } from 'react-icons/fa';
 import { FiMessageCircle } from 'react-icons/fi';
 import { GoPaperclip } from 'react-icons/go';
 import { IoClose } from 'react-icons/io5';
+import Image from 'next/image';
 
 import { Draggable } from '@hello-pangea/dnd';
 import { toast } from 'sonner';
 
 import { updateCardLabel } from '@/app/actions/card';
-import AvatarGroup from '@/components/ui/avatar-group';
 import { labels } from '@/constants/labels';
 import { Card } from '@/types';
 
@@ -25,13 +25,10 @@ const getColor = (id: string) => {
 
 const CardItem = ({ card, index }: { card: Card; index: number }) => {
   const [isModal, setIsModal] = useState(false);
-  const [isModalAllowed, setIsModalAllowed] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
 
   const handleModal = () => {
-    if (isModalAllowed) {
-      setIsModal(true);
-    }
+    setIsModal(true);
   };
 
   const handleRemoveLabel = async (labelId: string, e: React.MouseEvent) => {
@@ -67,26 +64,17 @@ const CardItem = ({ card, index }: { card: Card; index: number }) => {
             ref={provided.innerRef}
             onClick={handleModal}
             role="button"
-            className="group overflow-hidden rounded-lg bg-white px-4 py-3 text-sm shadow-sm transition-all hover:shadow-md"
+            className={`group relative flex cursor-pointer flex-col rounded-lg border bg-white p-3 shadow-sm hover:shadow-md ${isUpdating && 'pointer-events-none opacity-50'} `}
           >
             {/* Card Content */}
-            <div className="space-y-3">
-              {/* Title and Members */}
-              <div className="flex items-start justify-between gap-2">
-                <h3 className="line-clamp-2 flex-1 font-medium text-gray-900">
-                  {card.title}
-                </h3>
-
-                {/* Members */}
-                {card?.users?.length && card?.users?.length > 0 && (
-                  <div className="flex-shrink-0">
-                    <AvatarGroup users={card.users} size="sm" />
-                  </div>
-                )}
-              </div>
+            <div className="space-y-4">
+              {/* Title */}
+              <h3 className="line-clamp-2 font-medium text-gray-900">
+                {card.title}
+              </h3>
 
               {/* Labels and Metadata */}
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {/* Labels */}
                 <div className="flex gap-1.5">
                   {card?.label?.map((item: string) => (
@@ -100,58 +88,68 @@ const CardItem = ({ card, index }: { card: Card; index: number }) => {
                         className="absolute -right-1 -top-1 hidden h-4 w-4 rounded-full bg-white text-gray-500 shadow-sm group-hover/label:block hover:text-gray-700"
                         disabled={isUpdating}
                       >
-                        <IoClose className="h-4 w-4" />
+                        <IoClose className="h-full w-full" />
                       </button>
                     </div>
                   ))}
                 </div>
 
-                {/* Date and Time Tracker */}
-                <div className="flex items-center justify-between">
-                  {card?.dateTo && (
-                    <div
-                      className="max-w-[5rem] transition-opacity"
-                      onMouseEnter={() => setIsModalAllowed(false)}
-                      onMouseLeave={() => setIsModalAllowed(true)}
-                    >
-                      <CardDate cardData={card} />
-                    </div>
-                  )}
-                  <div
-                    className="transition-opacity"
-                    onMouseEnter={() => setIsModalAllowed(false)}
-                    onMouseLeave={() => setIsModalAllowed(true)}
-                  >
+                {/* Members */}
+                {card?.users && card?.users?.length > 0 && (
+                  <div className="flex items-center">
+                    {card.users.slice(0, 3).map(user => (
+                      <div key={user.id} className="group relative">
+                        <Image
+                          src={user.image || '/logo.jpg'}
+                          alt={user.name || 'User'}
+                          width={24}
+                          height={24}
+                          unoptimized={true}
+                          className="-ml-2 h-6 w-6 rounded-full ring-2 ring-white first:ml-0"
+                        />
+                        <div className="absolute left-full top-0 z-10 ml-2 hidden whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-xs text-white group-hover:block">
+                          {user.name || 'User'}
+                        </div>
+                      </div>
+                    ))}
+                    {card.users.length > 3 && (
+                      <div className="group relative">
+                        <div className="-ml-2 flex h-6 w-6 items-center justify-center rounded-full bg-yellow-500 text-xs font-medium text-white ring-2 ring-white">
+                          +{card.users.length - 3}
+                        </div>
+                        <div className="absolute left-full top-0 z-10 ml-2 hidden whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-xs text-white group-hover:block">
+                          {card.users.length - 3} more members
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Metadata */}
+                <div className="flex items-center justify-between text-gray-500">
+                  <div className="flex items-center gap-3">
+                    <CardDate cardData={card} />
                     <TimeTracker cardData={card} />
                   </div>
+                  <div className="flex items-center gap-3">
+                    {card?.description && (
+                      <div className="flex items-center gap-1">
+                        <GoPaperclip className="h-3.5 w-3.5" />
+                      </div>
+                    )}
+                    {card?.comments?.length > 0 && (
+                      <div className="flex items-center gap-1">
+                        <FiMessageCircle className="h-3.5 w-3.5" />
+                        <span className="text-xs">{card.comments.length}</span>
+                      </div>
+                    )}
+                    {card?.isCompleted && (
+                      <div className="flex items-center gap-1">
+                        <FaTools className="h-3.5 w-3.5" />
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-
-              {/* Card Footer - Metadata Icons */}
-              <div className="flex items-center gap-3">
-                {/* Links */}
-                {card?.links?.length > 0 && (
-                  <div className="flex items-center gap-1.5 text-sm text-gray-500 transition-colors group-hover:text-gray-700">
-                    <GoPaperclip className="h-4 w-4" />
-                    {card.links.length}
-                  </div>
-                )}
-
-                {/* Comments */}
-                {card?.comments?.length > 0 && (
-                  <div className="flex items-center gap-1.5 text-sm text-gray-500 transition-colors group-hover:text-gray-700">
-                    <FiMessageCircle className="h-4 w-4" />
-                    {card.comments.length}
-                  </div>
-                )}
-
-                {/* Todos */}
-                {card?.todos?.length > 0 && (
-                  <div className="flex items-center gap-1.5 text-sm text-gray-500 transition-colors group-hover:text-gray-700">
-                    <FaTools className="h-4 w-4" />
-                    {card.todos.length}
-                  </div>
-                )}
               </div>
             </div>
           </div>
