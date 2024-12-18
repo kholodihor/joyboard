@@ -1,27 +1,35 @@
-import { getAuthSession } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from 'next/server';
 
-export const GET = async (
-  req: Request,
-  { params }: { params: { cardId: string } }
-) => {
+import { getAuthSession } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ cardId: string }> },
+) {
   try {
+    const { cardId } = await params;
     const session = await getAuthSession();
 
     if (!session) {
-      return new NextResponse("Unauthorized", { status: 401 });
+      return new NextResponse('Unauthorized', { status: 401 });
     }
+
     const card = await prisma.card.findUnique({
-      where: { id: params.cardId },
+      where: { id: cardId },
       include: {
         list: true,
         users: true,
       },
     });
 
+    if (!card) {
+      return new NextResponse('Card not found', { status: 404 });
+    }
+
     return NextResponse.json(card);
   } catch (error) {
-    return new NextResponse("Internal server error", { status: 500 });
+    console.error('Error in GET /api/card/[cardId]:', error);
+    return new NextResponse('Internal server error', { status: 500 });
   }
-};
+}

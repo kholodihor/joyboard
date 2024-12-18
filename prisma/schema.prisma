@@ -65,6 +65,7 @@ model Board {
   image String
 
   userIds String[] @db.ObjectId
+  userEmails String[]
   Users   User[]   @relation(fields: [userIds], references: [id])
 
   lists     List[]

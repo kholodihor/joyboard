@@ -1,35 +1,19 @@
-import LargeLoader from "@/components/common/LargeLoader";
-import { prisma } from "@/lib/prisma";
-import dynamic from "next/dynamic";
+import { getLists } from '@/app/actions/list';
+import { BoardWrapper } from '@/components/boards/board-wrapper';
+import ListContainer from '@/components/list/list-container';
 
-const DynamicPage = dynamic(
-  () => import("@/components/list/ListContainer"),
+type Params = Promise<{ boardId: string }>;
 
-  { ssr: false, loading: () => <LargeLoader /> }
-);
-
-const BoardPage = async ({ params }: { params: { boardId: string } }) => {
-  const list = await prisma.list.findMany({
-    where: { boardId: params.boardId },
-    include: {
-      cards: {
-        orderBy: {
-          order: "asc",
-        },
-        include: {
-          users: true,
-        },
-      },
-    },
-    orderBy: {
-      order: "asc",
-    },
-  });
+const BoardPage = async (props: { params: Params }) => {
+  const { boardId } = await props.params;
+  const list = await getLists({ boardId });
 
   return (
-    <div className="p-4 w-full overflow-x-auto no-scrollbar">
-      <DynamicPage boardId={params.boardId} list={list} />
-    </div>
+    <BoardWrapper boardId={boardId}>
+      <div className="no-scrollbar w-full overflow-x-auto p-4">
+        <ListContainer boardId={boardId} list={list.result} />
+      </div>
+    </BoardWrapper>
   );
 };
 

@@ -1,25 +1,26 @@
-"use server";
+'use server';
 
-import { getAuthSession } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { getAuthSession } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 
 export const getUserByEmail = async (email: string) => {
-    const session = await getAuthSession();
-    if (!session) {
-      return {
-        error: "user not found",
-      };
-    }
-   try {
-    const user = await prisma.user.findUnique({
-        where: {
-            email
-        }
-    })
-    return user
-   } catch (error) {
+  const session = await getAuthSession();
+  if (!session) {
     return {
-        error: "failed to get user",
-      };
-    }
-   }
+      error: 'user not found',
+    };
+  }
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        email,
+      },
+    });
+    return user;
+  } catch (error) {
+    console.log(error);
+    return {
+      error: 'failed to get user',
+    };
+  }
+};

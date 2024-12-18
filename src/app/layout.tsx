@@ -1,14 +1,28 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
-import AuthProvider from "@/providers/AuthProvider";
-import { Toaster } from "sonner";
+import type { Metadata } from 'next';
+import localFont from 'next/font/local';
 
-const inter = Inter({ subsets: ["latin"] });
+import { Toaster } from 'sonner';
+
+import Footer from '@/components/common/footer';
+import Header from '@/components/common/header';
+import AuthProvider from '@/components/providers/auth-provider';
+
+import './globals.css';
+
+const geistSans = localFont({
+  src: './fonts/GeistVF.woff',
+  variable: '--font-geist-sans',
+  weight: '100 900',
+});
+const geistMono = localFont({
+  src: './fonts/GeistMonoVF.woff',
+  variable: '--font-geist-mono',
+  weight: '100 900',
+});
 
 export const metadata: Metadata = {
-  title: "JoyBoard",
-  description: "Manage your projects with joy",
+  title: 'JoyBoard',
+  description: 'Manage your projects with joy',
 };
 
 export default function RootLayout({
@@ -18,10 +32,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
         <AuthProvider>
-          <Toaster />
+          <Header />
           {children}
+          <Footer />
+          <Toaster />
         </AuthProvider>
       </body>
     </html>
