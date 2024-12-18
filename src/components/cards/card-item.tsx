@@ -23,13 +23,18 @@ const getColor = (id: string) => {
   return foundLabel?.color;
 };
 
-const CardItem = ({ card, index }: { card: Card; index: number }) => {
+const CardItem = ({
+  card,
+  index,
+  // eslint-disable-next-line prettier/prettier
+  onClick = () => { },
+}: {
+  card: Card;
+  index: number;
+  onClick?: () => void;
+}) => {
   const [isModal, setIsModal] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
-
-  const handleModal = () => {
-    setIsModal(true);
-  };
 
   const handleRemoveLabel = async (labelId: string, e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent modal from opening
@@ -62,9 +67,8 @@ const CardItem = ({ card, index }: { card: Card; index: number }) => {
             {...provided.draggableProps}
             {...provided.dragHandleProps}
             ref={provided.innerRef}
-            onClick={handleModal}
-            role="button"
-            className={`group relative flex cursor-pointer flex-col rounded-lg border bg-white p-3 shadow-sm hover:shadow-md ${isUpdating && 'pointer-events-none opacity-50'} `}
+            className={`group relative z-0 flex cursor-pointer flex-col rounded-lg border bg-white p-3 shadow-sm hover:shadow-md ${isUpdating && 'pointer-events-none opacity-50'}`}
+            onClick={onClick}
           >
             {/* Card Content */}
             <div className="space-y-4">
@@ -73,11 +77,10 @@ const CardItem = ({ card, index }: { card: Card; index: number }) => {
                 {card.title}
               </h3>
 
-              {/* Labels and Metadata */}
-              <div className="space-y-3">
-                {/* Labels */}
-                <div className="flex gap-1.5">
-                  {card?.label?.map((item: string) => (
+              {/* Labels */}
+              {card?.label?.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {card.label.map((item: string) => (
                     <div
                       key={item}
                       className="group/label relative h-2 w-8 rounded-full"
@@ -93,63 +96,62 @@ const CardItem = ({ card, index }: { card: Card; index: number }) => {
                     </div>
                   ))}
                 </div>
+              )}
 
-                {/* Members */}
-                {card?.users && card?.users?.length > 0 && (
-                  <div className="flex items-center">
-                    {card.users.slice(0, 3).map(user => (
-                      <div key={user.id} className="group relative">
-                        <Image
-                          src={user.image || '/logo.jpg'}
-                          alt={user.name || 'User'}
-                          width={24}
-                          height={24}
-                          unoptimized={true}
-                          className="-ml-2 h-6 w-6 rounded-full ring-2 ring-white first:ml-0"
-                        />
-                        <div className="absolute left-full top-0 z-10 ml-2 hidden whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-xs text-white group-hover:block">
-                          {user.name || 'User'}
-                        </div>
+              {/* Members */}
+              {card?.users && card?.users?.length > 0 && (
+                <div className="flex items-center">
+                  {card.users.slice(0, 3).map(user => (
+                    <div key={user.id} className="group relative">
+                      <Image
+                        src={user.image || '/logo.jpg'}
+                        alt={user.name || 'User'}
+                        width={24}
+                        height={24}
+                        className="-ml-2 h-6 w-6 rounded-full ring-2 ring-white first:ml-0"
+                      />
+                      <div className="absolute left-full top-0 z-10 ml-2 hidden whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-xs text-white group-hover:block">
+                        {user.name || 'User'}
                       </div>
-                    ))}
-                    {card.users.length > 3 && (
-                      <div className="group relative">
-                        <div className="-ml-2 flex h-6 w-6 items-center justify-center rounded-full bg-yellow-500 text-xs font-medium text-white ring-2 ring-white">
-                          +{card.users.length - 3}
-                        </div>
-                        <div className="absolute left-full top-0 z-10 ml-2 hidden whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-xs text-white group-hover:block">
-                          {card.users.length - 3} more members
-                        </div>
+                    </div>
+                  ))}
+                  {card.users.length > 3 && (
+                    <div className="group relative">
+                      <div className="-ml-2 flex h-6 w-6 items-center justify-center rounded-full bg-yellow-500 text-xs font-medium text-white ring-2 ring-white">
+                        +{card.users.length - 3}
                       </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Metadata */}
-                <div className="flex items-center justify-between text-gray-500">
-                  <div className="flex items-center gap-3">
-                    <CardDate cardData={card} />
-                    <TimeTracker cardData={card} />
-                  </div>
-                  <div className="flex items-center gap-3">
-                    {card?.description && (
-                      <div className="flex items-center gap-1">
-                        <GoPaperclip className="h-3.5 w-3.5" />
+                      <div className="absolute left-full top-0 z-10 ml-2 hidden whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-xs text-white group-hover:block">
+                        {card.users.length - 3} more members
                       </div>
-                    )}
-                    {card?.comments?.length > 0 && (
-                      <div className="flex items-center gap-1">
-                        <FiMessageCircle className="h-3.5 w-3.5" />
-                        <span className="text-xs">{card.comments.length}</span>
-                      </div>
-                    )}
-                    {card?.isCompleted && (
-                      <div className="flex items-center gap-1">
-                        <FaTools className="h-3.5 w-3.5" />
-                      </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
+              )}
+
+              {/* Footer - Metadata */}
+              <div className="flex flex-col gap-3">
+                <div className="max-w-[5rem]">
+                  <CardDate cardData={card} />
+                </div>
+                <div className="flex items-center gap-2 text-gray-500">
+                  {card?.description && (
+                    <div className="flex items-center">
+                      <GoPaperclip className="h-3.5 w-3.5" />
+                    </div>
+                  )}
+                  {card?.comments?.length > 0 && (
+                    <div className="flex items-center gap-1">
+                      <FiMessageCircle className="h-3.5 w-3.5" />
+                      <span className="text-xs">{card.comments.length}</span>
+                    </div>
+                  )}
+                  {card?.isCompleted && (
+                    <div className="flex items-center">
+                      <FaTools className="h-3.5 w-3.5" />
+                    </div>
+                  )}
+                </div>
+                <TimeTracker cardData={card} />
               </div>
             </div>
           </div>
