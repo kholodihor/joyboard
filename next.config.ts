@@ -1,13 +1,29 @@
+import type { NextConfig } from 'next';
+
 import { withSentryConfig } from '@sentry/nextjs';
 
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+/** @type {NextConfig} */
+const nextConfig: NextConfig = {
   images: {
-    domains: ['lh3.googleusercontent.com', 'avatars.githubusercontent.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'avatars.githubusercontent.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+      },
+    ],
   },
 };
 
-export default withSentryConfig(nextConfig, {
+// Sentry configuration options
+const sentryConfig = {
   // For all available options, see:
   // https://github.com/getsentry/sentry-webpack-plugin#options
 
@@ -45,4 +61,6 @@ export default withSentryConfig(nextConfig, {
   // https://docs.sentry.io/product/crons/
   // https://vercel.com/docs/cron-jobs
   automaticVercelMonitors: true,
-});
+};
+
+export default withSentryConfig(nextConfig, sentryConfig);

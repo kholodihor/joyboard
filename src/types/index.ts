@@ -15,6 +15,7 @@ export type Board = {
   title: string;
   image: string;
   userIds?: string[];
+  userEmails?: string[];
   Users?: User[];
   lists?: List[];
 };

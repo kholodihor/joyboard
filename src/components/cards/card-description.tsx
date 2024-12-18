@@ -14,7 +14,10 @@ import { Button } from '../ui/button';
 import 'react-quill-new/dist/quill.snow.css';
 
 interface CardDetails {
-  cardData: any;
+  cardData: {
+    id: string;
+    description?: string;
+  };
   setCardData: (cardData: any) => void;
 }
 

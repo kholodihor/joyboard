@@ -7,6 +7,26 @@ import { updateCardTrackedTimes } from '@/app/actions/card';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/types';
 
+// Utility functions
+const formatTime = (seconds: number): string => {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const remainingSeconds = seconds % 60;
+  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+};
+
+const calculateTotalTime = (times: string[]): number => {
+  return times.reduce((total, time) => {
+    const [hours, minutes, seconds] = time.split(':').map(Number);
+    return total + hours * 3600 + minutes * 60 + seconds;
+  }, 0);
+};
+
+const STORAGE_KEYS = {
+  isTracking: (id: string) => `timeTracker_${id}_isTracking`,
+  startTime: (id: string) => `timeTracker_${id}_startTime`,
+} as const;
+
 interface TimeTrackerProps {
   cardData: Card;
 }
@@ -21,10 +41,10 @@ export default function TimeTracker({ cardData }: TimeTrackerProps) {
 
   useEffect(() => {
     const storedIsTracking = localStorage.getItem(
-      `timeTracker_${cardData.id}_isTracking`,
+      STORAGE_KEYS.isTracking(cardData.id),
     );
     const storedStartTime = localStorage.getItem(
-      `timeTracker_${cardData.id}_startTime`,
+      STORAGE_KEYS.startTime(cardData.id),
     );
 
     if (storedIsTracking === 'true' && storedStartTime) {
@@ -41,7 +61,7 @@ export default function TimeTracker({ cardData }: TimeTrackerProps) {
     if (isTracking) {
       interval = setInterval(() => {
         const startTime = parseInt(
-          localStorage.getItem(`timeTracker_${cardData.id}_startTime`) || '0',
+          localStorage.getItem(STORAGE_KEYS.startTime(cardData.id)) || '0',
           10,
         );
         const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
@@ -56,39 +76,25 @@ export default function TimeTracker({ cardData }: TimeTrackerProps) {
     };
   }, [isTracking, cardData.id]);
 
-  const formatTime = (seconds: number): string => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const remainingSeconds = seconds % 60;
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
-  };
-
   const handleStartStop = () => {
     if (isTracking) {
       const newTrackedTime = formatTime(currentTime);
       setTrackedTimes(prevTimes => [...prevTimes, newTrackedTime]);
       setCurrentTime(0);
       updateCardTrackedTimes({
-        card: { ...cardData, trackedTimes: [...trackedTimes, newTrackedTime] },
+        card: cardData,
       });
-      localStorage.removeItem(`timeTracker_${cardData.id}_isTracking`);
-      localStorage.removeItem(`timeTracker_${cardData.id}_startTime`);
+      localStorage.removeItem(STORAGE_KEYS.isTracking(cardData.id));
+      localStorage.removeItem(STORAGE_KEYS.startTime(cardData.id));
       router.refresh();
     } else {
-      localStorage.setItem(`timeTracker_${cardData.id}_isTracking`, 'true');
+      localStorage.setItem(STORAGE_KEYS.isTracking(cardData.id), 'true');
       localStorage.setItem(
-        `timeTracker_${cardData.id}_startTime`,
+        STORAGE_KEYS.startTime(cardData.id),
         Date.now().toString(),
       );
     }
     setIsTracking(!isTracking);
-  };
-
-  const calculateTotalTime = (times: string[]): number => {
-    return times.reduce((total, time) => {
-      const [hours, minutes, seconds] = time.split(':').map(Number);
-      return total + hours * 3600 + minutes * 60 + seconds;
-    }, 0);
   };
 
   const totalTime = calculateTotalTime(trackedTimes) + currentTime;

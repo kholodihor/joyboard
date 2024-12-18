@@ -134,13 +134,22 @@ export const getNoBoardMembers = async ({ board }: { board: Board }) => {
   try {
     const users = await prisma.user.findMany({
       where: {
-        NOT: {
-          boards: {
-            some: {
-              id: board.id,
+        AND: [
+          {
+            NOT: {
+              boards: {
+                some: {
+                  id: board.id,
+                },
+              },
             },
           },
-        },
+          {
+            email: {
+              in: board.userEmails || [],
+            },
+          },
+        ],
       },
     });
     return { users };
