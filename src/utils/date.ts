@@ -34,8 +34,12 @@ export const isToday = (isoDate: string): boolean => {
 };
 
 export const isDateInPast = (isoDate: string): boolean => {
-  const date = new Date(isoDate); // Convert ISO string to Date object
+  const date = new Date(isoDate);
   const now = new Date();
 
-  return date < now; // Returns true if the given date is in the past
+  // Set both dates to start of day for comparison
+  date.setHours(0, 0, 0, 0);
+  now.setHours(0, 0, 0, 0);
+
+  return date < now; // Returns true if the given date is before today
 };

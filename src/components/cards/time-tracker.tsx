@@ -94,21 +94,23 @@ export default function TimeTracker({ cardData }: TimeTrackerProps) {
   const totalTime = calculateTotalTime(trackedTimes) + currentTime;
 
   return (
-    <div className="mt-4">
-      {/* <h3 className="text-sm font-semibold mb-2">Time Tracker</h3> */}
-      <div className="mb-2 flex items-center space-x-2">
-        <div className="text-md font-mono">{formatTime(currentTime)}</div>
+    <div className="flex items-center justify-between gap-2">
+      <div className="flex items-center gap-2">
+        <div className="font-mono text-sm text-gray-600">
+          {formatTime(currentTime)}
+        </div>
         <Button
           onClick={handleStartStop}
           variant={isTracking ? 'destructive' : 'default'}
           size="xs"
+          className="h-6 px-2 py-0 text-xs"
         >
           {isTracking ? 'Stop' : 'Start'}
         </Button>
       </div>
       {trackedTimes.length > 0 && (
-        <div className="mt-4 text-sm font-semibold">
-          Total Time: {formatTime(totalTime)}
+        <div className="text-xs font-medium text-gray-500">
+          Total: {formatTime(totalTime)}
         </div>
       )}
     </div>

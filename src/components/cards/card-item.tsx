@@ -27,7 +27,7 @@ const CardItem = ({
   card,
   index,
   // eslint-disable-next-line prettier/prettier
-  onClick = () => {},
+  onClick = () => { },
 }: {
   card: Card;
   index: number;
@@ -59,6 +59,12 @@ const CardItem = ({
     }
   };
 
+  const handleCardClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsModal(true);
+    onClick(); // Call the passed onClick handler as well
+  };
+
   return (
     <>
       <Draggable draggableId={card.id} index={index}>
@@ -68,15 +74,10 @@ const CardItem = ({
             {...provided.dragHandleProps}
             ref={provided.innerRef}
             className={`group relative z-[1] flex cursor-pointer flex-col rounded-lg border bg-white p-3 shadow-sm hover:shadow-md ${isUpdating && 'pointer-events-none opacity-50'}`}
-            onClick={onClick}
+            onClick={handleCardClick}
           >
             {/* Card Content */}
-            <div className="space-y-4">
-              {/* Title */}
-              <h3 className="line-clamp-2 font-medium text-gray-900">
-                {card.title}
-              </h3>
-
+            <div className="space-y-3">
               {/* Labels */}
               {card?.label?.length > 0 && (
                 <div className="flex flex-wrap gap-1.5">
@@ -98,41 +99,24 @@ const CardItem = ({
                 </div>
               )}
 
-              {/* Members */}
-              {card?.users && card?.users?.length > 0 && (
-                <div className="flex items-center">
-                  {card.users.slice(0, 3).map(user => (
-                    <div key={user.id} className="group relative">
-                      <Image
-                        src={user.image || '/logo.jpg'}
-                        alt={user.name || 'User'}
-                        width={24}
-                        height={24}
-                        className="-ml-2 h-6 w-6 rounded-full ring-2 ring-white first:ml-0"
-                      />
-                      <div className="absolute left-full top-0 z-10 ml-2 hidden whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-xs text-white group-hover:block">
-                        {user.name || 'User'}
-                      </div>
-                    </div>
-                  ))}
-                  {card.users.length > 3 && (
-                    <div className="group relative">
-                      <div className="-ml-2 flex h-6 w-6 items-center justify-center rounded-full bg-yellow-500 text-xs font-medium text-white ring-2 ring-white">
-                        +{card.users.length - 3}
-                      </div>
-                      <div className="absolute left-full top-0 z-10 ml-2 hidden whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-xs text-white group-hover:block">
-                        {card.users.length - 3} more members
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
+              {/* Title */}
+              <h3 className="line-clamp-2 font-medium text-gray-900">
+                {card.title}
+              </h3>
+
+              {/* Due Date */}
+              <div
+                className="max-w-[5rem]"
+                onClick={e => {
+                  e.stopPropagation();
+                }}
+              >
+                <CardDate cardData={card} />
+              </div>
 
               {/* Footer - Metadata */}
-              <div className="flex flex-col gap-3">
-                <div className="max-w-[5rem]">
-                  <CardDate cardData={card} />
-                </div>
+              <div className="flex items-center justify-between">
+                {/* Left side - Icons */}
                 <div className="flex items-center gap-2 text-gray-500">
                   {card?.description && (
                     <div className="flex items-center">
@@ -151,6 +135,40 @@ const CardItem = ({
                     </div>
                   )}
                 </div>
+
+                {/* Right side - Members */}
+                {card?.users && card?.users?.length > 0 && (
+                  <div className="flex items-center">
+                    {card.users.slice(0, 3).map(user => (
+                      <div key={user.id} className="group relative">
+                        <Image
+                          src={user.image || '/logo.jpg'}
+                          alt={user.name || 'User'}
+                          width={24}
+                          height={24}
+                          className="-ml-2 h-6 w-6 rounded-full ring-2 ring-white first:ml-0"
+                        />
+                        <div className="absolute left-full top-0 z-10 ml-2 hidden whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-xs text-white group-hover:block">
+                          {user.name || 'User'}
+                        </div>
+                      </div>
+                    ))}
+                    {card.users.length > 3 && (
+                      <div className="group relative">
+                        <div className="-ml-2 flex h-6 w-6 items-center justify-center rounded-full bg-yellow-500 text-xs font-medium text-white ring-2 ring-white">
+                          +{card.users.length - 3}
+                        </div>
+                        <div className="absolute left-full top-0 z-10 ml-2 hidden whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-xs text-white group-hover:block">
+                          {card.users.length - 3} more members
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Time Tracker */}
+              <div onClick={e => e.stopPropagation()}>
                 <TimeTracker cardData={card} />
               </div>
             </div>

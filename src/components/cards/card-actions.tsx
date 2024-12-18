@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback } from 'react';
+import { FC, JSX, useCallback } from 'react';
 import { FiCalendar, FiCopy, FiTag, FiTrash2, FiUsers } from 'react-icons/fi';
 import { useParams } from 'next/navigation';
 
@@ -17,10 +17,13 @@ import AddCardMember from './add-card-member';
 
 interface CardActionsProps {
   cardData: Card;
-  onCardUpdate?: (card: Card) => Promise<void>;
+  onCardUpdate: (card: Card) => Promise<void>;
 }
 
-const CardActions = ({ cardData, onCardUpdate }: CardActionsProps) => {
+const CardActions: FC<CardActionsProps> = ({
+  cardData,
+  onCardUpdate,
+}): JSX.Element | null => {
   const { boardId }: { boardId: string } = useParams();
 
   const handleCopy = useCallback(async () => {
@@ -30,10 +33,12 @@ const CardActions = ({ cardData, onCardUpdate }: CardActionsProps) => {
       const res = await copyCard({ id: cardData.id, boardId });
       if (res.success) {
         toast.success('Card successfully copied');
+      } else {
+        toast.error(res.error || 'Failed to copy card');
       }
     } catch (error) {
-      console.log(error);
-      toast.error('Card not copied');
+      console.error('Error copying card:', error);
+      toast.error('Failed to copy card');
     }
   }, [cardData?.id, boardId]);
 
@@ -49,13 +54,14 @@ const CardActions = ({ cardData, onCardUpdate }: CardActionsProps) => {
           toast.error('Failed to delete card');
         }
       } catch (error) {
-        console.log(error);
+        console.error('Error deleting card:', error);
         toast.error('Failed to delete card');
       }
     }
   }, [cardData?.id, boardId]);
 
-  if (!cardData) return null;
+  // Return null while data is loading
+  if (!cardData?.id) return null;
 
   return (
     <div className="space-y-4">

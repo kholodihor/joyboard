@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import React, { FC, useCallback, useEffect, useRef, useState } from 'react';
 import { FaRegTrashCan } from 'react-icons/fa6';
 
 import { toast } from 'sonner';
@@ -15,12 +15,15 @@ import { Skeleton } from '../ui/skeleton';
 
 import SubTitle from './sub-title';
 
-interface CardProps {
+interface CardLinksProps {
   cardData: Card;
-  onCardUpdate?: (card: Card) => Promise<void>;
+  onCardUpdate: (card: Card) => Promise<void>;
 }
 
-const CardLinks = ({ cardData, onCardUpdate }: CardProps) => {
+const CardLinks: FC<CardLinksProps> = ({
+  cardData,
+  onCardUpdate,
+}): React.JSX.Element => {
   const [isOpen, setIsOpen] = useState(false);
   const [links, setLinks] = useState<string[]>([]);
   const formRef = useRef<HTMLFormElement>(null);
@@ -28,15 +31,15 @@ const CardLinks = ({ cardData, onCardUpdate }: CardProps) => {
 
   useEffect(() => {
     if (!cardData) return;
-    setLinks(cardData?.links || []);
+    setLinks(cardData.links || []);
   }, [cardData]);
 
   const handleSubmit = useCallback(
-    async (e: React.FormEvent) => {
+    async (e: React.FormEvent): Promise<void> => {
       e.preventDefault();
-      if (!cardData?.id) return;
+      if (!formRef.current) return;
 
-      const formData = new FormData(formRef.current!);
+      const formData = new FormData(formRef.current);
       const newLink = formData.get('link') as string;
 
       if (!newLink.trim()) {
@@ -51,18 +54,10 @@ const CardLinks = ({ cardData, onCardUpdate }: CardProps) => {
           links: updatedLinks,
         };
 
-        // Update UI optimistically
         setLinks(updatedLinks);
+        await onCardUpdate(updatedCard);
 
-        // Update parent state
-        if (onCardUpdate) {
-          await onCardUpdate(updatedCard);
-        }
-
-        // Make API call
-        const res = await addCardLink({
-          card: updatedCard,
-        });
+        const res = await addCardLink({ card: updatedCard });
 
         if (res?.success) {
           toast.success('Your link added to card');
@@ -70,17 +65,15 @@ const CardLinks = ({ cardData, onCardUpdate }: CardProps) => {
           setIsEditable(false);
         }
       } catch (error) {
-        console.log(error);
+        console.error('Failed to add link:', error);
         toast.error('Failed to add link');
       }
     },
-    [cardData?.id, links, onCardUpdate],
+    [cardData, links, onCardUpdate],
   );
 
   const handleRemove = useCallback(
-    async (index: number) => {
-      if (!cardData?.id) return;
-
+    async (index: number): Promise<void> => {
       try {
         const updatedLinks = links.filter((_, i) => i !== index);
         const updatedCard = {
@@ -88,32 +81,24 @@ const CardLinks = ({ cardData, onCardUpdate }: CardProps) => {
           links: updatedLinks,
         };
 
-        // Update UI optimistically
         setLinks(updatedLinks);
+        await onCardUpdate(updatedCard);
 
-        // Update parent state
-        if (onCardUpdate) {
-          await onCardUpdate(updatedCard);
-        }
-
-        // Make API call
-        const res = await removeCardLink({
-          card: updatedCard,
-        });
+        const res = await removeCardLink({ card: updatedCard });
 
         if (res?.success) {
           toast.success('Link removed from card');
         }
       } catch (error) {
-        console.log(error);
+        console.error('Failed to remove link:', error);
         toast.error('Failed to remove link');
       }
     },
-    [cardData?.id, links, onCardUpdate],
+    [cardData, links, onCardUpdate],
   );
 
-  const editEnable = () => setIsEditable(true);
-  const editDisable = () => setIsEditable(false);
+  const editEnable = (): void => setIsEditable(true);
+  const editDisable = (): void => setIsEditable(false);
 
   if (isEditable) {
     return (

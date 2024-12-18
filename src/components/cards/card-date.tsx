@@ -27,23 +27,25 @@ const CardDate = ({ cardData, onCardUpdate }: CardProps) => {
 
   useEffect(() => {
     if (!cardData) return;
-    if (
-      isLessThan24Hours(cardData?.dateTo as string) ||
-      isToday(cardData?.dateTo as string)
-    ) {
+
+    const dateStr = cardData?.dateTo as string;
+
+    // Reset all states first
+    setIsIn24Hours(false);
+    setOutdated(false);
+    setIsCompleted(cardData.isCompleted || false);
+
+    if (cardData.isCompleted) return;
+
+    if (isLessThan24Hours(dateStr) || isToday(dateStr)) {
       setIsIn24Hours(true);
-    }
-    if (isDateInPast(cardData?.dateTo as string)) {
+    } else if (isDateInPast(dateStr)) {
       setOutdated(true);
-    }
-    if (cardData.isCompleted) {
-      setIsIn24Hours(false);
-      setOutdated(false);
-      setIsCompleted(true);
     }
   }, [cardData]);
 
-  const handleIsCompleted = useCallback(async () => {
+  const handleIsCompleted = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.stopPropagation(); // Prevent event bubbling
     try {
       setIsLoading(true);
       const newIsCompleted = !isCompleted;
@@ -90,22 +92,21 @@ const CardDate = ({ cardData, onCardUpdate }: CardProps) => {
 
   return (
     <div
-      className={`flex items-center justify-start gap-2 border px-2 py-1 text-xs ${
-        isIn24Hours
+      className={`flex items-center justify-start gap-2 border px-2 py-1 text-xs ${isIn24Hours
           ? 'bg-yellow-300'
           : isOutdated
             ? 'bg-red-300'
             : isCompleted
               ? 'bg-green-300'
               : 'bg-transparent'
-      }`}
+        }`}
     >
       <input
         type="checkbox"
         checked={isCompleted}
         onChange={handleIsCompleted}
+        className="h-4 w-4 cursor-pointer rounded border-gray-300 text-blue-600 focus:ring-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
         disabled={isLoading}
-        className="cursor-pointer"
       />
       {formatDate(cardData.dateTo as string)}
     </div>

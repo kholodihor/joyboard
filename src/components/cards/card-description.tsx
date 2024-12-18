@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useState } from 'react';
-import ReactQuill from 'react-quill-new';
+import dynamic from 'next/dynamic';
 import { useParams } from 'next/navigation';
 
 import { toast } from 'sonner';
@@ -26,6 +26,14 @@ const modules = {
     ['link', 'clean'],
   ],
 };
+
+// Dynamically import ReactQuill with SSR disabled
+const ReactQuill = dynamic(() => import('react-quill-new'), {
+  ssr: false,
+  loading: () => (
+    <div className="h-[200px] w-full animate-pulse rounded-md bg-slate-100" />
+  ),
+});
 
 const CardDescription = ({ cardData, setCardData }: CardDetails) => {
   const { boardId }: { boardId: string } = useParams();
