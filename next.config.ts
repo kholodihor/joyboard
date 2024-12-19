@@ -20,6 +20,26 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  webpack: (config, { buildId, dev }) => {
+    // Optimize cache serialization
+    config.cache = {
+      type: 'filesystem',
+      buildDependencies: {
+        config: [__filename],
+      },
+      cacheDirectory: '.next/cache',
+      store: 'pack',
+      name: dev ? 'development' : 'production',
+      version: buildId,
+      compression: 'gzip',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 1 week
+    };
+
+    return config;
+  },
+  experimental: {
+    turbo: {}, // Enable Turbopack with default optimizations
+  },
 };
 
 // Sentry configuration options

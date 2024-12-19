@@ -119,7 +119,7 @@ const CardDescription = ({ cardData, setCardData }: CardDetails) => {
           ) : (
             <div
               role="button"
-              className="max-h-70 rounded-ms min-h-20 overflow-auto bg-slate-100 p-3 text-sm"
+              className="max-h-70 rounded-ms min-h-20 overflow-auto bg-slate-100 p-3 px-8 text-sm"
               onClick={() => setIsEditable(true)}
               dangerouslySetInnerHTML={{
                 __html: editorValue || 'Add More Details',
