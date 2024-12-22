@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useParams } from 'next/navigation';
 
+import parse from 'html-react-parser';
 import { toast } from 'sonner';
 
 import { updateCard } from '@/app/actions/card';
@@ -121,10 +122,9 @@ const CardDescription = ({ cardData, setCardData }: CardDetails) => {
               role="button"
               className="max-h-70 rounded-ms min-h-20 overflow-auto bg-slate-100 p-3 px-8 text-sm"
               onClick={() => setIsEditable(true)}
-              dangerouslySetInnerHTML={{
-                __html: editorValue || 'Add More Details',
-              }}
-            />
+            >
+              {parse(editorValue || 'Add More Details')}
+            </div>
           )}
         </div>
       </div>
