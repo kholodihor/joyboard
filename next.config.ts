@@ -1,6 +1,11 @@
 import type { NextConfig } from 'next';
 
 import { withSentryConfig } from '@sentry/nextjs';
+import { dirname, resolve } from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 /** @type {NextConfig} */
 const nextConfig: NextConfig = {
@@ -27,7 +32,7 @@ const nextConfig: NextConfig = {
       buildDependencies: {
         config: [__filename],
       },
-      cacheDirectory: '.next/cache',
+      cacheDirectory: resolve(__dirname, '.next/cache'),
       store: 'pack',
       name: dev ? 'development' : 'production',
       version: buildId,

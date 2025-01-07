@@ -148,9 +148,9 @@ const CardItem = ({
                           height={24}
                           className="-ml-2 h-6 w-6 rounded-full ring-2 ring-white first:ml-0"
                         />
-                        <div className="absolute left-full top-0 z-10 ml-2 hidden whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-xs text-white group-hover:block">
+                        {/* <div className="absolute left-full top-0 z-10 ml-2 hidden whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-xs text-white group-hover:block">
                           {user.name || 'User'}
-                        </div>
+                        </div> */}
                       </div>
                     ))}
                     {card.users.length > 3 && (

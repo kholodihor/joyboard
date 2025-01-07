@@ -26,7 +26,7 @@ const CreateCard = ({ listId }: { listId: string }) => {
     const title = formData.get('title') as string;
 
     if (!title) {
-      toast.error('Please add list title');
+      toast.error('Please add card title');
       return;
     }
 
@@ -54,7 +54,7 @@ const CreateCard = ({ listId }: { listId: string }) => {
           className="m-1 space-y-4 px-1 py-0.5"
         >
           <div>
-            <TextAreaForm id="title" placeholder="List Title" />
+            <TextAreaForm id="title" placeholder="Card Title" />
             <FormSubmit className="mt-2">Create Card</FormSubmit>
           </div>
         </form>
