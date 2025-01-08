@@ -129,11 +129,11 @@ const CardItem = ({
                       <span className="text-xs">{card.comments.length}</span>
                     </div>
                   )}
-                  {card?.isCompleted && (
+                  {card?.todos.length ? (
                     <div className="flex items-center">
                       <FaTools className="h-3.5 w-3.5" />
                     </div>
-                  )}
+                  ) : null}
                 </div>
 
                 {/* Right side - Members */}
