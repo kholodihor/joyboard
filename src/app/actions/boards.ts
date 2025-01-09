@@ -57,6 +57,11 @@ export const createBoard = async (data: { title: string; image: string }) => {
     return { error: session.error };
   }
 
+  // Only admin can create boards
+  if (session.user.email !== 'kholodihor@gmail.com') {
+    return { error: 'Only admin can create new boards.' };
+  }
+
   const { title, image } = data;
 
   if (!title?.trim() || !image?.trim()) {
@@ -89,6 +94,11 @@ export const deleteBoard = async ({ id }: { id: string }) => {
     return { error: session.error };
   }
 
+  // Only admin can delete boards
+  if (session.user.email !== 'kholodihor@gmail.com') {
+    return { error: 'Only admin can delete boards.' };
+  }
+
   if (!id?.trim()) {
     return { error: 'Board ID is required.' };
   }
@@ -101,15 +111,6 @@ export const deleteBoard = async ({ id }: { id: string }) => {
 
     if (!board) {
       return { error: 'Board not found.' };
-    }
-
-    // Check if user has permission to delete the board
-    const hasPermission =
-      board.Users.some(user => user.id === session.user.id) ||
-      session.user.email === 'kholodihor@gmail.com';
-
-    if (!hasPermission) {
-      return { error: 'You do not have permission to delete this board.' };
     }
 
     const deletedBoard = await prisma.board.delete({ where: { id } });
