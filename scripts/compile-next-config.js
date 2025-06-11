@@ -14,7 +14,7 @@ const compiledJsPath = path.resolve(__dirname, '../next.config.compiled.js');
 try {
   // Compile the TypeScript file
   console.log('Compiling next.config.ts...');
-  
+
   // First compile to a temporary file
   const tempOutFile = path.resolve(__dirname, '../next.config.temp.js');
   execSync(
@@ -23,14 +23,14 @@ try {
       stdio: 'inherit',
     },
   );
-  
+
   // Then rename the file to the expected name
   const compiledFileName = path.basename(tsConfigPath).replace('.ts', '.js');
   const actualCompiledPath = path.resolve(
     path.dirname(tempOutFile),
     compiledFileName,
   );
-  
+
   if (fs.existsSync(actualCompiledPath)) {
     fs.renameSync(actualCompiledPath, compiledJsPath);
     console.log(`Successfully compiled next.config.ts to ${compiledJsPath}`);

@@ -12,12 +12,14 @@ Joyboard is a modern web application built with Next.js, NextAuth for authentica
 ## Setup Instructions
 
 1. Clone the repository:
+
    ```bash
    git clone <your-repo-url>
    cd joyboard
    ```
 
 2. Install dependencies:
+
    ```bash
    npm install
    # or
@@ -26,6 +28,7 @@ Joyboard is a modern web application built with Next.js, NextAuth for authentica
 
 3. Set up environment variables:
    Create a `.env` file in the root directory with the following variables:
+
    ```env
    GOOGLE_ID=your-google-client-id
    GOOGLE_SECRET=your-google-client-secret
@@ -34,6 +37,7 @@ Joyboard is a modern web application built with Next.js, NextAuth for authentica
    ```
 
 4. Run Prisma migrations:
+
    ```bash
    npx prisma migrate dev
    ```

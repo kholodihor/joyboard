@@ -27,7 +27,7 @@ const CardItem = ({
   card,
   index,
   // eslint-disable-next-line prettier/prettier
-  onClick = () => { },
+  onClick = () => {},
 }: {
   card: Card;
   index: number;

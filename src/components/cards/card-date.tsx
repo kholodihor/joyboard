@@ -44,62 +44,66 @@ const CardDate = ({ cardData, onCardUpdate }: CardProps) => {
     }
   }, [cardData]);
 
-  const handleIsCompleted = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.stopPropagation(); // Prevent event bubbling
-    try {
-      setIsLoading(true);
-      const newIsCompleted = !isCompleted;
-      const updatedCard = {
-        ...cardData,
-        isCompleted: newIsCompleted,
-      };
+  const handleIsCompleted = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      e.stopPropagation(); // Prevent event bubbling
+      try {
+        setIsLoading(true);
+        const newIsCompleted = !isCompleted;
+        const updatedCard = {
+          ...cardData,
+          isCompleted: newIsCompleted,
+        };
 
-      // Optimistic UI update
-      setIsCompleted(newIsCompleted);
-      if (newIsCompleted) {
-        setIsIn24Hours(false);
-        setOutdated(false);
-      }
-
-      // Update parent state
-      if (onCardUpdate) {
-        await onCardUpdate(updatedCard);
-      }
-
-      // Update API
-      const res = await updateCardIsCompleted({
-        card: updatedCard,
-      });
-
-      if (!res?.success) {
-        // Revert optimistic update if API call fails
-        setIsCompleted(!newIsCompleted);
-        if (!newIsCompleted) {
-          setIsIn24Hours(true);
-          setOutdated(true);
+        // Optimistic UI update
+        setIsCompleted(newIsCompleted);
+        if (newIsCompleted) {
+          setIsIn24Hours(false);
+          setOutdated(false);
         }
+
+        // Update parent state
+        if (onCardUpdate) {
+          await onCardUpdate(updatedCard);
+        }
+
+        // Update API
+        const res = await updateCardIsCompleted({
+          card: updatedCard,
+        });
+
+        if (!res?.success) {
+          // Revert optimistic update if API call fails
+          setIsCompleted(!newIsCompleted);
+          if (!newIsCompleted) {
+            setIsIn24Hours(true);
+            setOutdated(true);
+          }
+          toast.error('Failed to update card status');
+        }
+      } catch (error) {
+        console.error(error);
         toast.error('Failed to update card status');
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error(error);
-      toast.error('Failed to update card status');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [cardData, isCompleted, onCardUpdate]);
+    },
+    [cardData, isCompleted, onCardUpdate],
+  );
 
   if (!cardData?.dateTo) return null;
 
   return (
     <div
-      className={`flex items-center justify-start gap-2 border px-2 py-1 text-xs ${isIn24Hours
+      className={`flex items-center justify-start gap-2 border px-2 py-1 text-xs ${
+        isIn24Hours
           ? 'bg-yellow-300'
           : isOutdated
             ? 'bg-red-300'
             : isCompleted
               ? 'bg-green-300'
               : 'bg-transparent'
-        }`}
+      }`}
     >
       <input
         type="checkbox"
