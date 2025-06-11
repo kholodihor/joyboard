@@ -1,13 +1,9 @@
-import * as Sentry from '@sentry/nextjs';
+// This file is intentionally left empty after removing Sentry
+// It can be used for future instrumentation needs
 
 export async function register() {
-  if (process.env.NEXT_RUNTIME === 'nodejs') {
-    await import('../sentry.server.config');
-  }
-
-  if (process.env.NEXT_RUNTIME === 'edge') {
-    await import('../sentry.edge.config');
-  }
+  // Instrumentation registration code can be added here in the future
 }
 
-export const onRequestError = Sentry.captureRequestError;
+// Export an empty function as a placeholder for request error handling
+export const onRequestError = () => {};

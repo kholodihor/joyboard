@@ -1,11 +1,6 @@
 import type { NextConfig } from 'next';
 
-import { withSentryConfig } from '@sentry/nextjs';
-import { dirname, resolve } from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+import path from 'path';
 
 /** @type {NextConfig} */
 const nextConfig: NextConfig = {
@@ -25,16 +20,18 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  webpack: (config, { buildId, dev }) => {
-    // Optimize cache serialization
+  webpack: (config, { buildId, dev, isServer }) => {
+    // Optimize cache serialization with unique names for different compilers
     config.cache = {
       type: 'filesystem',
       buildDependencies: {
-        config: [__filename],
+        config: [path.resolve(process.cwd(), 'next.config.ts')],
       },
-      cacheDirectory: resolve(__dirname, '.next/cache'),
+      cacheDirectory: path.resolve(process.cwd(), '.next/cache'),
       store: 'pack',
-      name: dev ? 'development' : 'production',
+      name: dev
+        ? `${isServer ? (config.name === 'edge-server' ? 'edge-server' : 'server') : 'client'}-development`
+        : `${isServer ? (config.name === 'edge-server' ? 'edge-server' : 'server') : 'client'}-production`,
       version: buildId,
       compression: 'gzip',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 1 week
@@ -47,45 +44,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-// Sentry configuration options
-const sentryConfig = {
-  // For all available options, see:
-  // https://github.com/getsentry/sentry-webpack-plugin#options
-
-  org: process.env.SENTRY_ORG!,
-  project: process.env.SENTRY_PROJECT!,
-
-  // Only print logs for uploading source maps in CI
-  silent: !process.env.CI,
-
-  // For all available options, see:
-  // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
-
-  // Upload a larger set of source maps for prettier stack traces (increases build time)
-  widenClientFileUpload: true,
-
-  // Automatically annotate React components to show their full name in breadcrumbs and session replay
-  reactComponentAnnotation: {
-    enabled: true,
-  },
-
-  // Route browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers.
-  // This can increase your server load as well as your hosting bill.
-  // Note: Check that the configured route will not match with your Next.js middleware, otherwise reporting of client-
-  // side errors will fail.
-  tunnelRoute: '/monitoring',
-
-  // Hides source maps from generated client bundles
-  hideSourceMaps: true,
-
-  // Automatically tree-shake Sentry logger statements to reduce bundle size
-  disableLogger: true,
-
-  // Enables automatic instrumentation of Vercel Cron Monitors. (Does not yet work with App Router route handlers.)
-  // See the following for more information:
-  // https://docs.sentry.io/product/crons/
-  // https://vercel.com/docs/cron-jobs
-  automaticVercelMonitors: true,
-};
-
-export default withSentryConfig(nextConfig, sentryConfig);
+export default nextConfig;

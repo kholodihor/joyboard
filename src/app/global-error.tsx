@@ -3,8 +3,6 @@
 import { useEffect } from 'react';
 import { FiAlertTriangle } from 'react-icons/fi';
 
-import * as Sentry from '@sentry/nextjs';
-
 export default function GlobalError({
   error,
   reset,
@@ -13,7 +11,8 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
-    Sentry.captureException(error);
+    // Error logging can be added here in the future if needed
+    console.error(error);
   }, [error]);
 
   return (

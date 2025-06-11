@@ -2,8 +2,7 @@
 
 import { revalidateTag } from 'next/cache';
 
-import { List } from '@prisma/client';
-
+import { List } from '@/lib/generated/prisma';
 import { prisma } from '@/lib/prisma';
 
 interface ReorderListItem {
