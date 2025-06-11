@@ -1,49 +1,67 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with
-[`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Joyboard
 
-## Getting Started
+Joyboard is a modern web application built with Next.js, NextAuth for authentication, and Prisma for database management. It provides a seamless and secure user experience with Google authentication.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- Google OAuth authentication using NextAuth
+- Secure session management with JWT strategy
+- Prisma ORM integration with a PostgreSQL (or other) database
+- Customizable authentication pages
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the
-result.
+## Setup Instructions
 
-You can start editing the page by modifying `app/page.tsx`. The page
-auto-updates as you edit the file.
+1. Clone the repository:
+   ```bash
+   git clone <your-repo-url>
+   cd joyboard
+   ```
 
-This project uses
-[`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts)
-to automatically optimize and load [Geist](https://vercel.com/font), a new font
-family for Vercel.
+2. Install dependencies:
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
 
-## Learn More
+3. Set up environment variables:
+   Create a `.env` file in the root directory with the following variables:
+   ```env
+   GOOGLE_ID=your-google-client-id
+   GOOGLE_SECRET=your-google-client-secret
+   DATABASE_URL=your-database-connection-url
+   NEXTAUTH_SECRET=your-nextauth-secret
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+4. Run Prisma migrations:
+   ```bash
+   npx prisma migrate dev
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js
-  features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+5. Start the development server:
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   ```
 
-You can check out
-[the Next.js GitHub repository](https://github.com/vercel/next.js) - your
-feedback and contributions are welcome!
+## Usage
 
-## Deploy on Vercel
+- Access the app at `http://localhost:3000`
+- Sign in using your Google account on the `/login` page
+- Customize authentication and session handling in `src/lib/auth.ts`
 
-The easiest way to deploy your Next.js app is to use the
-[Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme)
-from the creators of Next.js.
+## Troubleshooting
 
-Check out our
-[Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying)
-for more details.
+- If you encounter `[next-auth][error][CLIENT_FETCH_ERROR] Failed to fetch`, ensure your API routes are correctly set up and accessible.
+- Verify environment variables are properly configured.
+- For Prisma errors related to client initialization, check your Prisma schema and client setup.
+- Use browser devtools network tab to inspect API requests.
+
+## License
+
+This project is licensed under the MIT License.
+
+---
+
+Feel free to contribute or report issues on the repository.

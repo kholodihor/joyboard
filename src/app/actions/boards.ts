@@ -193,7 +193,7 @@ export const addEmailToBoard = async (data: {
     }
 
     // Check if user is already a member
-    if (board.Users.some(u => u.id === user.id)) {
+    if (board.Users.some((u: { id: string }) => u.id === user.id)) {
       return { error: 'User is already a member of this board.' };
     }
 
@@ -237,7 +237,7 @@ export const addMemberInBoard = async (data: { user: User; board: Board }) => {
     }
 
     // Check if user is already a member
-    if (existingBoard.Users.some(u => u.id === user.id)) {
+    if (existingBoard.Users.some((u: { id: string }) => u.id === user.id)) {
       return { error: 'User is already a member of this board.' };
     }
 
