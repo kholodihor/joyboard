@@ -1,71 +1,144 @@
-# Joyboard
+# Joyboard 🧩
 
-Joyboard is a modern web application built with Next.js, NextAuth for authentication, and Prisma for database management. It provides a seamless and secure user experience with Google authentication.
+Joyboard is a modern, collaborative Kanban-style board app built with Next.js 15, React 19, Prisma, and NextAuth. It features drag-and-drop boards/cards, team collaboration, and an integrated AI Agent chat powered by the Vercel AI SDK and LangChain.
 
-## Features
+## ✨ Features
 
-- Google OAuth authentication using NextAuth
-- Secure session management with JWT strategy
-- Prisma ORM integration with a PostgreSQL (or other) database
-- Customizable authentication pages
+- __Authentication__: Google OAuth via NextAuth with secure JWT sessions
+- __Boards & Cards__: Create, update, delete boards/cards with modern UI
+- __Collaboration__: Invite members to boards and manage access
+- __Drag & Drop__: Smooth card movement with `@hello-pangea/dnd`
+- __Rich UI__: Tailwind CSS + shadcn/ui components
+- __AI Agent__: In-app chat using `@ai-sdk/react` and a LangGraph agent (`/api/chat`)
+- __Type Safety__: Full TypeScript across the stack
+- __Prisma ORM__: PostgreSQL (or compatible) database
 
-## Setup Instructions
+## 🧱 Tech Stack
 
-1. Clone the repository:
+- Framework: `next@15`, `react@19`, `react-dom@19`
+- Auth: `next-auth`
+- Database: `prisma` + `@prisma/client`
+- UI: Tailwind CSS + shadcn/ui (Radix primitives)
+- DnD: `@hello-pangea/dnd`
+- AI: `ai`, `@ai-sdk/react`, `@langchain/*`
 
-   ```bash
-   git clone <your-repo-url>
-   cd joyboard
-   ```
+## 📁 Project Structure
 
-2. Install dependencies:
+```
+src/
+  app/
+    api/
+      chat/route.ts          # AI chat streaming API (LangChain + AI SDK)
+    (boards)/                # Boards routes
+  components/
+    boards/
+      board-navbar.tsx
+      board-chat.tsx         # Chat dialog using @ai-sdk/react
+  lib/
+  utils/
+    message-converters.ts    # AI message helpers
+    stream-logging.ts        # Dev-only stream logger
+prisma/
+  schema.prisma
+```
 
-   ```bash
-   npm install
-   # or
-   yarn install
-   ```
+## 🚀 Getting Started (Local)
 
-3. Set up environment variables:
-   Create a `.env` file in the root directory with the following variables:
+1) __Clone & Install__
 
-   ```env
-   GOOGLE_ID=your-google-client-id
-   GOOGLE_SECRET=your-google-client-secret
-   DATABASE_URL=your-database-connection-url
-   NEXTAUTH_SECRET=your-nextauth-secret
-   ```
+```bash
+git clone <your-repo-url>
+cd joyboard
+npm install
+```
 
-4. Run Prisma migrations:
+2) __Environment Variables__
 
-   ```bash
-   npx prisma migrate dev
-   ```
+Create a `.env` file in the project root. Use `env.example` as a reference and add the AI key:
 
-5. Start the development server:
-   ```bash
-   npm run dev
-   # or
-   yarn dev
-   ```
+```env
+# Auth
+GOOGLE_ID=your-google-client-id
+GOOGLE_SECRET=your-google-client-secret
+NEXTAUTH_SECRET=your-nextauth-secret
 
-## Usage
+# Database
+DATABASE_URL=postgresql://user:password@host:5432/dbname?schema=public
 
-- Access the app at `http://localhost:3000`
-- Sign in using your Google account on the `/login` page
-- Customize authentication and session handling in `src/lib/auth.ts`
+# AI
+OPENAI_API_KEY=sk-...
+```
 
-## Troubleshooting
+3) __Generate Prisma Client & Migrate__
 
-- If you encounter `[next-auth][error][CLIENT_FETCH_ERROR] Failed to fetch`, ensure your API routes are correctly set up and accessible.
-- Verify environment variables are properly configured.
-- For Prisma errors related to client initialization, check your Prisma schema and client setup.
-- Use browser devtools network tab to inspect API requests.
+```bash
+npx prisma migrate dev
+```
 
-## License
+4) __Run the App__
 
-This project is licensed under the MIT License.
+```bash
+npm run dev
+```
+
+Open `http://localhost:3000` and sign in with Google.
+
+## 🤖 AI Agent Chat
+
+- UI component: `src/components/boards/board-chat.tsx`
+- Hook: `useChat` from `@ai-sdk/react`
+- API route: `src/app/api/chat/route.ts` (LangChain `createReactAgent` + `LangChainAdapter` streaming)
+- Dev-only stream logging is applied dynamically and excluded from production bundles.
+
+Ensure `OPENAI_API_KEY` is set. The default model in the API is `gpt-4` (update as you prefer).
+
+## 🧪 Useful Scripts
+
+```bash
+npm run dev        # Start Next.js dev server
+npm run build      # Build for production (includes prisma generate)
+npm run start      # Start production server
+npm run lint       # Run ESLint
+npm run lint:fix   # Fix lint issues
+npm run format     # Prettier format
+```
+
+## ☁️ Deploying to Vercel
+
+1) __Create Vercel project__ and link this repository.
+
+2) __Set Environment Variables__ in the Vercel dashboard:
+
+- `GOOGLE_ID`
+- `GOOGLE_SECRET`
+- `NEXTAUTH_SECRET`
+- `DATABASE_URL`
+- `OPENAI_API_KEY`
+
+3) __Build & Runtime__
+
+- No special config is required for the dev-only logger; it is dynamically imported only in development.
+- If you run into runtime issues with LangChain, add at the top of `src/app/api/chat/route.ts`:
+
+  ```ts
+  export const runtime = 'nodejs';
+  ```
+
+4) __Database__
+
+- For production, use a hosted PostgreSQL provider (e.g., Neon, Supabase, RDS). Make sure `DATABASE_URL` is set. Run your migrations (via CI/CD or manually) before first start.
+
+## 🛠️ Troubleshooting
+
+- __Auth fetch errors__: Check that NextAuth routes are available and `NEXTAUTH_SECRET` is set.
+- __Prisma errors__: Verify `DATABASE_URL`, run `npx prisma migrate dev`, and confirm your schema matches the DB.
+- __AI API errors__: Ensure `OPENAI_API_KEY` is present and the model name is valid; inspect `/api/chat` responses.
+- __UI issues__: Verify Tailwind config and that shadcn components are correctly imported from `src/components/ui/*`.
+
+## 📜 License
+
+MIT — see `LICENSE` (or add one if missing).
 
 ---
 
-Feel free to contribute or report issues on the repository.
+If you have ideas or find issues, feel free to open a PR or file an issue. Happy building!
