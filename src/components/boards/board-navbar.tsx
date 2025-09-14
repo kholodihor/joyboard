@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { Board, User } from '@/types';
 
 import AddBoardMembers from './add-board-members';
+import BoardChat from './board-chat';
 import DeleteBoard from './delete-board';
 
 const BoardNavbar = ({ board }: { board: Board }) => {
@@ -22,6 +23,7 @@ const BoardNavbar = ({ board }: { board: Board }) => {
           />
         ))}
         <AddBoardMembers board={board} />
+        <BoardChat />
         <DeleteBoard board={board} />
       </div>
     </div>
