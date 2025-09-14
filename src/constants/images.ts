@@ -2,7 +2,7 @@ export const defaultImages = [
   {
     id: '1',
     image:
-      'https://res.cloudinary.com/dxogh1ji2/image/upload/v1726300942/sinkai_vgwhc4.avif',
+      'https://res.cloudinary.com/dxogh1ji2/image/upload/v1757845409/20250914_1222_Enhanced_Anime_Scenes_remix_01k53vvra4ffq86b56kjh6jtf7_cvjqvy.png',
     name: 'sinkai',
   },
   {
