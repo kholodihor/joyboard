@@ -2,7 +2,7 @@ import Image from 'next/image';
 
 const Hero = () => {
   return (
-    <div className="grid min-h-screen grid-cols-1 items-center bg-gradient-to-b from-purple-700 to-pink-500 px-[10%] py-16 lg:grid-cols-2">
+    <div className="grid h-[80vh] grid-cols-1 items-center bg-gradient-to-b from-purple-700 to-pink-500 px-[10%] py-16 lg:grid-cols-2 2xl:h-[85vh]">
       <div className="p-2 text-white">
         <h1 className="text-5xl font-extrabold">
           JoyBoard brings all your tasks, teammates, and tools together
