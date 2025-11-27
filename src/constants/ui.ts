@@ -24,3 +24,9 @@ export const COLORS = {
     HOVER: 'rgba(243, 244, 246, 0.8)',
   },
 } as const;
+
+export const Z_INDEX = {
+  MODAL: 1000,
+  DROPDOWN: 900,
+  TOAST: 1100,
+} as const;
