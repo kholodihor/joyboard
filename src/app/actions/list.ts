@@ -36,7 +36,7 @@ export const createList = async (data: {
       },
     });
 
-    revalidateTag(`board-${boardId}`);
+    revalidateTag(`board-${boardId}`, 'force');
     return { result: list };
   } catch (error) {
     console.error('Failed to create list:', error);
@@ -81,8 +81,8 @@ export const updateList = async (data: {
       data: { title },
     });
 
-    revalidateTag(`board-${boardId}`);
-    revalidateTag(`list-${id}`);
+    revalidateTag(`board-${boardId}`, 'force');
+    revalidateTag(`list-${id}`, 'force');
     return { result: list };
   } catch (error) {
     console.error('Failed to update list:', error);
@@ -101,8 +101,8 @@ export const deleteList = async (data: {
       where: { id, boardId },
     });
 
-    revalidateTag(`board-${boardId}`);
-    revalidateTag(`list-${id}`);
+    revalidateTag(`board-${boardId}`, 'force');
+    revalidateTag(`list-${id}`, 'force');
     return { result: list };
   } catch (error) {
     console.error('Failed to delete list:', error);
@@ -126,8 +126,8 @@ export const reorderLists = async (data: {
 
     const lists = await prisma.$transaction(transaction);
 
-    revalidateTag(`board-${boardId}`);
-    items.forEach(item => revalidateTag(`list-${item.id}`));
+    revalidateTag(`board-${boardId}`, 'force');
+    items.forEach(item => revalidateTag(`list-${item.id}`, 'force'));
 
     return { result: lists };
   } catch (error) {
