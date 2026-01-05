@@ -2,6 +2,8 @@
 
 import { revalidatePath } from 'next/cache';
 
+import type { User as PrismaUser } from '@prisma/client';
+
 import { getAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { Board, User } from '@/types';
@@ -193,7 +195,7 @@ export const addEmailToBoard = async (data: {
     }
 
     // Check if user is already a member
-    if (board.Users.some(u => u.id === user.id)) {
+    if (board.Users.some((u: PrismaUser) => u.id === user.id)) {
       return { error: 'User is already a member of this board.' };
     }
 
@@ -237,7 +239,7 @@ export const addMemberInBoard = async (data: { user: User; board: Board }) => {
     }
 
     // Check if user is already a member
-    if (existingBoard.Users.some(u => u.id === user.id)) {
+    if (existingBoard.Users.some((u: PrismaUser) => u.id === user.id)) {
       return { error: 'User is already a member of this board.' };
     }
 

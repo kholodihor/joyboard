@@ -34,15 +34,17 @@ const AddCardMember = ({
         });
         if (response?.success && response.result) {
           // Transform the response to match User type
-          const transformedMembers: User[] = response.result.map(member => ({
-            id: member.id,
-            name: member.name || '',
-            email: member.email || '',
-            image: member.image || '',
-            emailVerified: member.emailVerified?.toISOString(),
-            boardIds: member.boardIds || [],
-            cardIds: member.cardIds || [],
-          }));
+          const transformedMembers: User[] = response.result.map(
+            (member: any) => ({
+              id: member.id,
+              name: member.name || '',
+              email: member.email || '',
+              image: member.image || '',
+              emailVerified: member.emailVerified?.toISOString(),
+              boardIds: member.boardIds || [],
+              cardIds: member.cardIds || [],
+            }),
+          );
           setMembers(transformedMembers);
         }
       } catch (error) {
