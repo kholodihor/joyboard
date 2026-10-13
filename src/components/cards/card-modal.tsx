@@ -2,10 +2,9 @@
 
 import React, { useCallback } from 'react';
 import Image from 'next/image';
-import { useParams } from 'next/navigation';
 
 import { X } from 'lucide-react';
-import useSWR, { mutate } from 'swr';
+import useSWR from 'swr';
 
 import { removeMemberFromCard } from '@/app/actions/card';
 import {
@@ -14,9 +13,11 @@ import {
   DialogContent,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { labels } from '@/constants/labels';
+import { AVATAR_PLACEHOLDER } from '@/constants/images';
+import { getLabelColor } from '@/constants/labels';
 import { fetcher } from '@/lib/fetcher';
-import { User } from '@/types';
+import { saveCard } from '@/lib/save-card';
+import { Card, User } from '@/types';
 
 import CardActions from './card-actions';
 import CardCommentsInput from './card-comments';
@@ -33,52 +34,34 @@ interface CardModel {
 }
 
 const CardModal = ({ id, isModal, setIsModal }: CardModel) => {
-  const { data: cardData, mutate: mutateCard } = useSWR(
+  const { data: cardData, mutate: mutateCard } = useSWR<Card>(
     `/api/card/${id}`,
     fetcher,
     {
       revalidateOnFocus: false,
     },
   );
-  const { boardId }: { boardId: string } = useParams();
-
-  const getColor = (id: string) => {
-    const foundLabel = labels.find(label => label.id === id);
-    return foundLabel?.color;
-  };
 
   const handleCardUpdate = useCallback(
-    async (updatedData: any) => {
-      // Optimistically update the UI
-      await mutateCard(updatedData, false);
-
-      // Revalidate the board data as well
-      await mutate(`/api/board/${boardId}`);
+    async (updatedCard: Card) => {
+      await mutateCard(updatedCard, false);
     },
-    [mutateCard, boardId],
+    [mutateCard],
   );
 
   const removeCardMember = async (user: User) => {
     if (!user || !cardData) return;
 
-    const updatedUser = {
-      ...user,
-      cardIds: user.cardIds?.filter(id => id !== cardData.id),
-    };
-
-    const updatedCard = {
-      ...cardData,
-      userIds: cardData.userIds?.filter((id: any) => id !== user.id),
-      users: cardData.users?.filter((u: any) => u.id !== user.id),
-    };
-
-    // Optimistically update UI
-    await handleCardUpdate(updatedCard);
-
-    // Make API call
-    await removeMemberFromCard({
-      user: updatedUser,
-      card: updatedCard,
+    await saveCard({
+      previous: cardData,
+      next: {
+        ...cardData,
+        userIds: cardData.userIds?.filter(id => id !== user.id),
+        users: cardData.users?.filter(u => u.id !== user.id),
+      },
+      onCardUpdate: handleCardUpdate,
+      action: c => removeMemberFromCard({ user, card: c }),
+      errorMessage: 'Failed to remove card member',
     });
   };
 
@@ -104,14 +87,14 @@ const CardModal = ({ id, isModal, setIsModal }: CardModel) => {
                 {/* Members Section */}
                 <div className="space-y-3">
                   <div className="flex flex-wrap gap-2">
-                    {cardData?.users?.map((user: User) => (
+                    {cardData.users?.map(user => (
                       <div
                         key={user.id}
                         className="group relative flex items-center gap-x-2 rounded-md border bg-gray-50/50 px-3 py-2 transition hover:bg-gray-100/50"
                       >
                         <div className="relative h-6 w-6">
                           <Image
-                            src={user.image || ''}
+                            src={user.image || AVATAR_PLACEHOLDER}
                             alt={user.name || ''}
                             className="rounded-full"
                             fill
@@ -141,11 +124,11 @@ const CardModal = ({ id, isModal, setIsModal }: CardModel) => {
                 {/* Labels Section */}
                 <div className="space-y-3">
                   <div className="flex flex-wrap gap-2">
-                    {cardData?.label?.map((labelId: string) => (
+                    {cardData.label?.map(labelId => (
                       <div
                         key={labelId}
                         className="rounded-md px-3 py-1.5"
-                        style={{ backgroundColor: getColor(labelId) }}
+                        style={{ backgroundColor: getLabelColor(labelId) }}
                       />
                     ))}
                   </div>
@@ -182,6 +165,7 @@ const CardModal = ({ id, isModal, setIsModal }: CardModel) => {
                   <CardActions
                     cardData={cardData}
                     onCardUpdate={handleCardUpdate}
+                    onDeleted={() => setIsModal(false)}
                   />
                 </div>
               </div>

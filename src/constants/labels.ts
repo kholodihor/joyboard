@@ -25,3 +25,6 @@ export const labels = [
     color: '#0ea5e9',
   },
 ];
+
+export const getLabelColor = (id: string) =>
+  labels.find(label => label.id === id)?.color;

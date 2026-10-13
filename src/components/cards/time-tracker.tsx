@@ -3,6 +3,8 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
+import { toast } from 'sonner';
+
 import { updateCardTrackedTimes } from '@/app/actions/card';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/types';
@@ -76,25 +78,36 @@ export default function TimeTracker({ cardData }: TimeTrackerProps) {
     };
   }, [isTracking, cardData.id]);
 
-  const handleStartStop = () => {
+  const handleStartStop = async () => {
     if (isTracking) {
-      const newTrackedTime = formatTime(currentTime);
-      setTrackedTimes(prevTimes => [...prevTimes, newTrackedTime]);
+      const next = [...trackedTimes, formatTime(currentTime)];
+      setTrackedTimes(next);
       setCurrentTime(0);
-      updateCardTrackedTimes({
-        card: cardData,
-      });
+      setIsTracking(false);
       localStorage.removeItem(STORAGE_KEYS.isTracking(cardData.id));
       localStorage.removeItem(STORAGE_KEYS.startTime(cardData.id));
-      router.refresh();
+
+      try {
+        const res = await updateCardTrackedTimes({
+          card: { ...cardData, trackedTimes: next },
+        });
+        if (!res.success) {
+          toast.error(res.error);
+          return;
+        }
+        router.refresh();
+      } catch (error) {
+        console.error('Failed to save tracked time:', error);
+        toast.error('Failed to save tracked time');
+      }
     } else {
       localStorage.setItem(STORAGE_KEYS.isTracking(cardData.id), 'true');
       localStorage.setItem(
         STORAGE_KEYS.startTime(cardData.id),
         Date.now().toString(),
       );
+      setIsTracking(true);
     }
-    setIsTracking(!isTracking);
   };
 
   const totalTime = calculateTotalTime(trackedTimes) + currentTime;

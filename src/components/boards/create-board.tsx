@@ -28,12 +28,12 @@ const CreateBoardPopup = () => {
 
     try {
       const res = await createBoard({ title, image });
-      if ('board' in res && res.board) {
-        toast.success('Board successfully added');
-        router.push(`/board/${res.board.id}`);
-      } else {
+      if ('error' in res) {
         toast.error(res.error || 'Failed to create board');
+        return;
       }
+      toast.success('Board successfully added');
+      router.push(`/board/${res.board.id}`);
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Board not created';

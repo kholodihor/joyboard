@@ -1,38 +1,27 @@
-import { useParams } from 'next/navigation';
-
-import { toast } from 'sonner';
-
 import { updateCard } from '@/app/actions/card';
+import { saveCard } from '@/lib/save-card';
+import { Card } from '@/types';
 
 import InputForm from '../atomic/input-form';
 
 interface CardDetails {
-  cardData: any;
-  setCardData: (cardData: any) => void;
+  cardData: Card;
+  setCardData: (cardData: Card) => void | Promise<void>;
 }
 
 const CardHeader = ({ cardData, setCardData }: CardDetails) => {
-  const { boardId }: { boardId: string } = useParams();
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); // Prevent default form submission behavior
     const formData = new FormData(e.target as HTMLFormElement);
-    const title = formData.get('title') as string;
+    const title = String(formData.get('title') ?? '');
 
-    try {
-      const res = await updateCard({
-        title,
-        boardId,
-        id: cardData.id,
-      });
-      if (res?.result) {
-        setCardData(res.result);
-        toast.success('Card successfully updated');
-      }
-    } catch (error) {
-      console.log(error);
-      toast.error('Card not updated');
-    }
+    await saveCard({
+      previous: cardData,
+      next: { ...cardData, title },
+      onCardUpdate: setCardData,
+      action: c => updateCard({ id: c.id, title: c.title }),
+      successMessage: 'Card successfully updated',
+    });
   };
 
   return (

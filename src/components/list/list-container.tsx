@@ -2,17 +2,20 @@
 
 import React, { useEffect, useState } from 'react';
 
+import type { DropResult } from '@hello-pangea/dnd';
 import { DragDropContext, Droppable } from '@hello-pangea/dnd';
+import { toast } from 'sonner';
 
 import { reorderCard } from '@/app/actions/card';
 import { reorderLists } from '@/app/actions/list';
+import type { ListWithCards } from '@/types';
 
 import CreateList from './create-list';
 import ListItem from './list-item';
 
 interface ListProps {
   boardId: string;
-  list: any;
+  list: ListWithCards[];
 }
 
 function reOrderData<T>(list: T[], startIndex: number, endIndex: number) {
@@ -23,6 +26,9 @@ function reOrderData<T>(list: T[], startIndex: number, endIndex: number) {
   return result;
 }
 
+const toCardItems = (cards: ListWithCards['cards']) =>
+  cards.map(({ id, order, listId }) => ({ id, order, listId }));
+
 const ListContainer = ({ boardId, list }: ListProps) => {
   const [listData, setListData] = useState(list);
 
@@ -30,7 +36,7 @@ const ListContainer = ({ boardId, list }: ListProps) => {
     setListData(list);
   }, [list]);
 
-  const onDragEnd = async (result: any) => {
+  const onDragEnd = async (result: DropResult) => {
     const { destination, source, type } = result;
 
     if (!destination) return;
@@ -42,55 +48,73 @@ const ListContainer = ({ boardId, list }: ListProps) => {
       return;
     }
 
+    const previous = listData;
+
     if (type === 'list') {
       const data = reOrderData(listData, source.index, destination.index).map(
-        (item: any, index: number) => ({ ...item, order: index }),
+        (item, index) => ({ ...item, order: index }),
       );
       setListData(data);
-      await reorderLists({ items: data, boardId });
+      const res = await reorderLists({
+        items: data.map(({ id, order }) => ({ id, order })),
+        boardId,
+      });
+      if (res.error) {
+        toast.error(res.error);
+        setListData(previous);
+      }
+      return;
     }
 
     if (type === 'card') {
-      const newListData = [...listData];
-      const sourceList = newListData.find(
-        list => list.id === source.droppableId,
-      );
-      const destList = newListData.find(
-        list => list.id === destination.droppableId,
+      const sourceList = listData.find(item => item.id === source.droppableId);
+      const destList = listData.find(
+        item => item.id === destination.droppableId,
       );
       if (!sourceList || !destList) return;
 
-      if (!sourceList.cards) {
-        sourceList.cards = [];
-      }
-      if (!destList.cards) {
-        destList.cards = [];
-      }
+      let changedLists: ListWithCards[];
+
       if (source.droppableId === destination.droppableId) {
-        const reorderedCards = reOrderData(
-          sourceList.cards,
+        const cards = reOrderData(
+          sourceList.cards ?? [],
           source.index,
           destination.index,
-        );
-        reorderedCards.forEach((card: any, idx: number) => {
-          card.order = idx;
-        });
-        sourceList.cards = reorderedCards;
-        setListData(newListData);
-        await reorderCard({ boardId: boardId, items: reorderedCards });
+        ).map((card, idx) => ({ ...card, order: idx }));
+        changedLists = [{ ...sourceList, cards }];
       } else {
-        const [movedCard] = sourceList.cards.splice(source.index, 1);
+        const sourceCards = [...(sourceList.cards ?? [])];
+        const [movedCard] = sourceCards.splice(source.index, 1);
+        if (!movedCard) return;
+        const destCards = [...(destList.cards ?? [])];
+        destCards.splice(destination.index, 0, {
+          ...movedCard,
+          listId: destList.id,
+        });
+        changedLists = [
+          {
+            ...sourceList,
+            cards: sourceCards.map((card, idx) => ({ ...card, order: idx })),
+          },
+          {
+            ...destList,
+            cards: destCards.map((card, idx) => ({ ...card, order: idx })),
+          },
+        ];
+      }
 
-        movedCard.listId = destination.droppableId;
-        destList.cards.splice(destination.index, 0, movedCard);
-        sourceList.cards.forEach((card: any, idx: number) => {
-          card.order = idx;
-        });
-        destList.cards.forEach((card: any, idx: number) => {
-          card.order = idx;
-        });
-        setListData(newListData);
-        await reorderCard({ boardId: boardId, items: destList.cards });
+      const newListData = listData.map(
+        item => changedLists.find(changed => changed.id === item.id) ?? item,
+      );
+      setListData(newListData);
+
+      const res = await reorderCard({
+        boardId,
+        items: changedLists.flatMap(item => toCardItems(item.cards)),
+      });
+      if (!res.success) {
+        toast.error(res.error);
+        setListData(previous);
       }
     }
   };
@@ -104,7 +128,7 @@ const ListContainer = ({ boardId, list }: ListProps) => {
             ref={provided.innerRef}
             className="flex h-full min-h-[75vh] w-full list-none gap-x-3"
           >
-            {listData?.map((list: any, index: number) => (
+            {listData?.map((list, index) => (
               <ListItem key={list.id} list={list} index={index} />
             ))}
             {provided.placeholder}

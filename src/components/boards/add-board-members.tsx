@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
 
+import type { User } from '@prisma/client';
 import { PopoverTrigger } from '@radix-ui/react-popover';
 import { toast } from 'sonner';
 
@@ -13,53 +13,45 @@ import {
   addMemberInBoard,
   getNoBoardMembers,
 } from '@/app/actions/boards';
-import { Board, User } from '@/types';
+import { AVATAR_PLACEHOLDER } from '@/constants/images';
 
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Popover, PopoverContent } from '../ui/popover';
 
-const AddBoardMembers = ({ board }: { board: Board }) => {
-  const session = useSession();
+const AddBoardMembers = ({
+  board,
+  canInvite,
+}: {
+  board: { id: string; title: string };
+  canInvite: boolean;
+}) => {
   const router = useRouter();
   const [members, setMembers] = useState<User[]>([]);
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const getMembers = async () => {
-    const response = await getNoBoardMembers({ board });
-    if ('users' in response && Array.isArray(response.users)) {
-      const mappedUsers = response.users
-        .filter((user): user is NonNullable<typeof user> => user !== null)
-        .map(user => ({
-          id: user.id,
-          name: user.name || 'Unnamed User',
-          email: user.email || '',
-          image: user.image || '',
-          boardIds: user.boardIds || [],
-          cardIds: user.cardIds || [],
-        }));
-      setMembers(mappedUsers);
-    } else {
-      toast.error(response.error || 'Failed to fetch members');
-    }
-  };
-
   useEffect(() => {
-    if (!board) return;
-    getMembers();
-  }, []);
+    const getMembers = async () => {
+      const response = await getNoBoardMembers({ boardId: board.id });
+      if ('error' in response) {
+        toast.error(response.error);
+        return;
+      }
+      setMembers(response.users);
+    };
 
-  console.log(session.data?.user.email);
+    getMembers();
+  }, [board.id]);
 
   const addMembers = async (user: User) => {
-    user?.boardIds?.push(board.id);
-    board?.userIds?.push(user.id);
-    await addMemberInBoard({
-      user,
-      board,
-    });
-    setMembers(members?.filter((item: User) => item.id != user.id));
+    const res = await addMemberInBoard({ userId: user.id, boardId: board.id });
+    if ('error' in res) {
+      toast.error(res.error);
+      return;
+    }
+    setMembers(prev => prev.filter(u => u.id !== user.id));
+    toast.success('Member added');
     router.refresh();
   };
 
@@ -76,7 +68,6 @@ const AddBoardMembers = ({ board }: { board: Board }) => {
         body: JSON.stringify({
           email,
           boardId: board.id,
-          boardName: board.title,
         }),
       });
 
@@ -84,15 +75,15 @@ const AddBoardMembers = ({ board }: { board: Board }) => {
         throw new Error('Failed to send invitation');
       }
 
-      toast.success('Invitation sent successfully!');
+      const res = await addEmailToBoard({ email, boardId: board.id });
+      if ('error' in res) {
+        toast.error(res.error);
+        return;
+      }
+
+      toast.success('Invitation sent');
       setEmail('');
-
-      await addEmailToBoard({
-        email,
-        boardId: board.id,
-      });
-
-      toast.success('User added to board successfully!');
+      router.refresh();
     } catch (error) {
       console.log(error);
       toast.error('Failed to send invitation. Please try again.');
@@ -111,7 +102,7 @@ const AddBoardMembers = ({ board }: { board: Board }) => {
         side="bottom"
         align="start"
       >
-        {session.data?.user.email === 'kholodihor@gmail.com' && (
+        {canInvite && (
           <div className="px-4 pb-4">
             <h3 className="mb-2 text-sm font-medium">Invite via Email</h3>
             <form onSubmit={sendInvitation} className="flex gap-2">
@@ -134,22 +125,22 @@ const AddBoardMembers = ({ board }: { board: Board }) => {
           <div className="p-2 text-sm font-medium text-neutral-600">
             Add Existing Members
           </div>
-          {members?.map((user: any) => (
+          {members.map(user => (
             <div
-              key={user?.id}
+              key={user.id}
               className="flex cursor-pointer items-center gap-2 p-2 hover:bg-slate-100"
               onClick={() => addMembers(user)}
             >
               <Image
-                src={user?.image}
+                src={user.image || AVATAR_PLACEHOLDER}
                 className="h-12 w-12 rounded-full object-cover"
-                alt={user?.name}
+                alt={user.name ?? ''}
                 width={30}
                 height={30}
               />
               <div>
-                <h1 className="font-semibold">{user?.name}</h1>
-                <p className="text-xs text-gray-400">{user?.id}</p>
+                <h1 className="font-semibold">{user.name}</h1>
+                <p className="text-xs text-gray-400">{user.email}</p>
               </div>
             </div>
           ))}

@@ -1,36 +1,9 @@
-// import BoardNavbar from '@/components/boards/board-navbar';
-// import { prisma } from '@/lib/prisma';
-
-// type Params = Promise<{ boardId: string }>;
-
-// const BoardLayout = async ({
-//   children,
-//   props,
-// }: {
-//   children: React.ReactNode;
-//   props: { params: Params };
-// }) => {
-//   const { boardId } = await props.params;
-
-//   const board: any = await prisma.board.findUnique({
-//     where: { id: boardId },
-//     include: { Users: true },
-//   });
-
-//   return (
-//     <div
-//       className="relative h-[88vh] bg-cover bg-center bg-no-repeat"
-//       style={{ backgroundImage: `url(${board?.image})` }}
-//     >
-//       <BoardNavbar board={board} />
-//       <div>{children}</div>
-//     </div>
-//   );
-// };
-
-// export default BoardLayout;
+import { notFound } from 'next/navigation';
 
 import BoardNavbar from '@/components/boards/board-navbar';
+import { isAdmin } from '@/constants/auth';
+import { canAccessBoard } from '@/lib/access';
+import { getAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
 type Params = Promise<{ boardId: string }>;
@@ -43,15 +16,15 @@ export default async function BoardLayout({
   params: Params;
 }) {
   const { boardId } = await params;
+  const session = await getAuthSession();
 
-  const board: any = await prisma.board.findUnique({
-    where: { id: boardId },
-    include: { Users: true },
-  });
+  // Malformed ObjectIds make Prisma throw; treat them as a missing board.
+  const board = await prisma.board
+    .findUnique({ where: { id: boardId }, include: { Users: true } })
+    .catch(() => null);
 
-  if (!board) {
-    // Handle the case where the board is not found
-    return <div>Board not found</div>;
+  if (!session || !board || !canAccessBoard(session, board)) {
+    notFound();
   }
 
   return (
@@ -59,7 +32,7 @@ export default async function BoardLayout({
       className="relative h-[88vh] bg-cover bg-center bg-no-repeat"
       style={{ backgroundImage: `url(${board.image})` }}
     >
-      <BoardNavbar board={board} />
+      <BoardNavbar board={board} isAdmin={isAdmin(session.user.email)} />
       <div>{children}</div>
     </div>
   );

@@ -1,13 +1,14 @@
 'use client';
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { useParams } from 'next/navigation';
 
+import DOMPurify from 'dompurify';
 import parse from 'html-react-parser';
-import { toast } from 'sonner';
 
 import { updateCard } from '@/app/actions/card';
+import { saveCard } from '@/lib/save-card';
+import { Card } from '@/types';
 
 import FormSubmit from '../atomic/form-submit';
 import { Button } from '../ui/button';
@@ -15,11 +16,8 @@ import { Button } from '../ui/button';
 import 'react-quill-new/dist/quill.snow.css';
 
 interface CardDetails {
-  cardData: {
-    id: string;
-    description?: string;
-  };
-  setCardData: (cardData: any) => void;
+  cardData: Card;
+  setCardData: (cardData: Card) => void | Promise<void>;
 }
 
 const modules = {
@@ -39,52 +37,36 @@ const ReactQuill = dynamic(() => import('react-quill-new'), {
   ),
 });
 
+// Descriptions are written by other board members, so never render them
+// unsanitized. DOMPurify needs a DOM, so render nothing on the server.
+const sanitize = (html: string) =>
+  typeof window === 'undefined' ? '' : DOMPurify.sanitize(html);
+
 const CardDescription = ({ cardData, setCardData }: CardDetails) => {
-  const { boardId }: { boardId: string } = useParams();
   const [isEditable, setIsEditable] = useState(false);
   const [editorValue, setEditorValue] = useState('');
-  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    if (!cardData) return;
-    setMounted(true);
-    setEditorValue(cardData?.description || '');
-  }, [cardData]);
+  const startEditing = () => {
+    // Seed the editor only when editing starts, so background revalidation
+    // of the card never wipes in-progress edits.
+    setEditorValue(cardData.description || '');
+    setIsEditable(true);
+  };
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
-      if (!cardData?.id) return;
-
-      try {
-        const res = await updateCard({
-          description: editorValue,
-          boardId,
-          id: cardData.id,
-        });
-        if (res?.result) {
-          setCardData(res.result);
-          setIsEditable(false);
-          toast.success('Card successfully updated');
-        }
-      } catch (error) {
-        console.log(error);
-        toast.error('Card not updated');
-      }
+      const saved = await saveCard({
+        previous: cardData,
+        next: { ...cardData, description: editorValue },
+        onCardUpdate: setCardData,
+        action: c => updateCard({ id: c.id, description: c.description ?? '' }),
+        successMessage: 'Card successfully updated',
+      });
+      if (saved) setIsEditable(false);
     },
-    [editorValue, cardData?.id, boardId],
+    [cardData, editorValue, setCardData],
   );
-
-  if (!mounted) {
-    return (
-      <div className="mb-[1rem]">
-        <div>
-          <p className="font-bold text-slate-700">Description</p>
-          <div className="mt-5 h-[200px] w-full animate-pulse rounded-md bg-slate-100" />
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="mb-[1rem]">
@@ -121,9 +103,11 @@ const CardDescription = ({ cardData, setCardData }: CardDetails) => {
             <div
               role="button"
               className="max-h-70 rounded-ms min-h-20 overflow-auto bg-slate-100 p-3 px-8 text-sm"
-              onClick={() => setIsEditable(true)}
+              onClick={startEditing}
             >
-              {parse(editorValue || 'Add More Details')}
+              {cardData.description
+                ? parse(sanitize(cardData.description))
+                : 'Add More Details'}
             </div>
           )}
         </div>

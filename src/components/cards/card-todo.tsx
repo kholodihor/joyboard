@@ -1,214 +1,103 @@
 'use client';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { FaRegTrashCan } from 'react-icons/fa6';
-
-import { toast } from 'sonner';
+import React from 'react';
 
 import {
   addCardTodo,
   changeTodoCompleted,
   removeCardTodo,
 } from '@/app/actions/card';
+import { saveCard } from '@/lib/save-card';
 import { Card, Todo } from '@/types';
 
-import FormSubmit from '../atomic/form-submit';
-import TextAreaForm from '../atomic/textarea-form';
-import { Button } from '../ui/button';
-import { Skeleton } from '../ui/skeleton';
-
-import SubTitle from './sub-title';
+import CardSection, { RemoveItemButton } from './card-section';
+import { ExpandableTextForm } from './inline-text-form';
 
 interface CardProps {
   cardData: Card;
-  setCardData: (cardData: any) => void;
+  setCardData: (cardData: Card) => Promise<void>;
 }
 
 const CardTodo = ({ cardData, setCardData }: CardProps) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [todos, setTodos] = useState<Todo[]>([]);
-  const formRef = useRef<HTMLFormElement>(null);
-  const [isEditable, setIsEditable] = useState(false);
+  const todos = cardData.todos ?? [];
 
-  useEffect(() => {
-    if (!cardData) return;
-    setTodos(cardData?.todos || []);
-  }, [cardData]);
+  const saveTodos = (
+    nextTodos: Todo[],
+    action: typeof addCardTodo,
+    successMessage: string,
+    errorMessage: string,
+  ) =>
+    saveCard({
+      previous: cardData,
+      next: { ...cardData, todos: nextTodos },
+      onCardUpdate: setCardData,
+      action: card => action({ card }),
+      successMessage,
+      errorMessage,
+    });
 
-  const handleSubmit = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-      if (!cardData) return;
+  const handleSubmit = (content: string) =>
+    saveTodos(
+      [...todos, { id: crypto.randomUUID(), content, completed: false }],
+      addCardTodo,
+      'Your todo added to card',
+      'Failed to add todo',
+    );
 
-      const formData = new FormData(e.target as HTMLFormElement);
-      const todo = formData.get('todo') as string;
-      if (!todo.trim()) {
-        toast.error('Todo content cannot be empty');
-        return;
-      }
+  const handleCompleted = (id: string | null) =>
+    saveTodos(
+      todos.map(todo =>
+        todo.id === id ? { ...todo, completed: !todo.completed } : todo,
+      ),
+      changeTodoCompleted,
+      'Todo status updated',
+      'Failed to update todo status',
+    );
 
-      try {
-        const newTodo = {
-          id: crypto.randomUUID(),
-          content: todo,
-          completed: false,
-        };
-        setTodos(prevTodos => [...prevTodos, newTodo]);
-        const updatedCard = {
-          ...cardData,
-          todos: [...todos, newTodo],
-        };
-        const res = await addCardTodo({
-          card: updatedCard,
-        });
-        formRef.current?.reset();
-        if (res?.success) {
-          setCardData(res.result);
-          toast.success('Your todo added to card');
-        }
-      } catch (error) {
-        console.log(error);
-        toast.error('Failed to add todo');
-      }
-    },
-    [cardData, todos],
-  );
-
-  const handleCompleted = useCallback(
-    async (id: string) => {
-      if (!cardData) return;
-
-      try {
-        const todo = cardData.todos?.find(todo => todo.id === id);
-        if (todo) {
-          todo.completed = !todo.completed;
-        }
-        const res = await changeTodoCompleted({
-          card: cardData,
-        });
-        if (res?.success) {
-          setCardData(res.result);
-          setTodos(res.result.todos);
-          toast.success('Todo status updated');
-        } else {
-          toast.error(res?.error || 'Failed to update todo status');
-        }
-      } catch (error) {
-        console.error('Error updating todo status:', error);
-        toast.error('Failed to update todo status');
-      }
-    },
-    [cardData],
-  );
-
-  const handleRemove = useCallback(
-    async (id: string) => {
-      if (!cardData) return;
-
-      try {
-        if (confirm('Are you sure you want to delete this todo?')) {
-          const updatedCard = {
-            ...cardData,
-            todos: todos.filter(todo => todo.id !== id),
-          };
-          const res = await removeCardTodo({
-            card: updatedCard,
-          });
-          if (res?.success) {
-            setCardData(res.result);
-            setTodos(res.result.todos);
-            toast.success('Todo deleted');
-          } else {
-            toast.error(res?.error || 'Failed to delete todo');
-          }
-        }
-      } catch (error) {
-        console.error('Error deleting todo:', error);
-        toast.error('Failed to delete todo');
-      }
-    },
-    [cardData, todos],
-  );
+  const handleRemove = async (id: string | null) => {
+    if (!confirm('Are you sure you want to delete this todo?')) return;
+    await saveTodos(
+      todos.filter(todo => todo.id !== id),
+      removeCardTodo,
+      'Todo deleted',
+      'Failed to delete todo',
+    );
+  };
 
   return (
-    <div className="mb-[1rem]">
-      <div>
-        <SubTitle
-          title="Todos"
-          isOpen={isOpen}
-          setIsOpen={setIsOpen}
-          length={todos.length}
+    <CardSection
+      title="Todos"
+      count={todos.length}
+      footer={
+        <ExpandableTextForm
+          name="todo"
+          placeholder="Write a todo to card"
+          submitLabel="Add"
+          emptyMessage="Todo content cannot be empty"
+          onSubmit={handleSubmit}
         />
+      }
+    >
+      {todos.map((todo: Todo) => (
         <div
-          className={`no-scrollbar max-h-[40vh] overflow-auto ${isOpen ? 'block' : 'hidden'}`}
+          key={todo.id}
+          className="mb-2 flex flex-col items-start gap-2 rounded-md bg-input p-2"
         >
-          <div className="my-2">
-            {todos.length > 0 &&
-              todos.map((todo: Todo, index: number) => (
-                <div
-                  key={index}
-                  className="mb-2 flex flex-col items-start gap-2 rounded-md bg-input p-2"
-                >
-                  <div className="flex w-full justify-between gap-4">
-                    <div className="flex flex-1 gap-2">
-                      <input
-                        type="checkbox"
-                        name="completed"
-                        id="completed"
-                        checked={todo.completed}
-                        onChange={() => handleCompleted(todo.id)}
-                      />
-                      <p className="bg-input p-2 text-xs">{todo.content}</p>
-                    </div>
-                    <button
-                      onClick={() => handleRemove(todo.id)}
-                      className="text-red-500"
-                    >
-                      <FaRegTrashCan />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            {!todos && (
-              <div className="flex flex-col space-y-3">
-                <Skeleton className="h-6 w-[250px]" />
-                <Skeleton className="h-6 w-[250px]" />
-                <Skeleton className="h-6 w-[250px]" />
-                <Skeleton className="h-6 w-[250px]" />
-              </div>
-            )}
-          </div>
-          {isEditable ? (
-            <form onSubmit={handleSubmit} className="space-y-2" ref={formRef}>
-              <TextAreaForm
-                id="todo"
-                className="mt-2 w-full"
-                placeholder="Write a todo to card"
-                defaultValue={''}
+          <div className="flex w-full justify-between gap-4">
+            <div className="flex flex-1 gap-2">
+              <input
+                type="checkbox"
+                name="completed"
+                aria-label={todo.content ?? ''}
+                checked={!!todo.completed}
+                onChange={() => handleCompleted(todo.id)}
               />
-              <div className="flex items-center justify-between">
-                <FormSubmit>Add</FormSubmit>
-                <Button
-                  type="button"
-                  onClick={() => setIsEditable(false)}
-                  size="sm"
-                  variant="ghost"
-                >
-                  Cancel
-                </Button>
-              </div>
-            </form>
-          ) : (
-            <div
-              role="button"
-              className="rounded-ms min-h-20 bg-slate-100 p-3 text-sm"
-              onClick={() => setIsEditable(true)}
-            >
-              {'Write a todo to card'}
+              <p className="bg-input p-2 text-xs">{todo.content}</p>
             </div>
-          )}
+            <RemoveItemButton onClick={() => handleRemove(todo.id)} />
+          </div>
         </div>
-      </div>
-    </div>
+      ))}
+    </CardSection>
   );
 };
 

@@ -1,4 +1,7 @@
-export const formatDate = (isoDate: string): string => {
+// Server actions return Date objects; JSON from /api routes returns ISO strings.
+type DateInput = Date | string;
+
+export const formatDate = (isoDate: DateInput): string => {
   const date = new Date(isoDate);
 
   const day = date.getDate().toString().padStart(2, '0'); // Use local date instead of UTC
@@ -12,7 +15,7 @@ export const formatDate = (isoDate: string): string => {
   return formattedDate;
 };
 
-export const isLessThan24Hours = (isoDate: string): boolean => {
+export const isLessThan24Hours = (isoDate: DateInput): boolean => {
   const date = new Date(isoDate); // Convert ISO string to Date object
   const now = new Date();
   const timeDifference = date.getTime() - now.getTime(); // Difference in milliseconds
@@ -22,7 +25,7 @@ export const isLessThan24Hours = (isoDate: string): boolean => {
   return hoursDifference <= 24 && timeDifference > 0; // Ensure it's in the future and less than 24 hours
 };
 
-export const isToday = (isoDate: string): boolean => {
+export const isToday = (isoDate: DateInput): boolean => {
   const date = new Date(isoDate); // Convert ISO string to Date object
   const today = new Date();
 
@@ -33,7 +36,7 @@ export const isToday = (isoDate: string): boolean => {
   return today.getTime() === date.getTime();
 };
 
-export const isDateInPast = (isoDate: string): boolean => {
+export const isDateInPast = (isoDate: DateInput): boolean => {
   const date = new Date(isoDate);
   const now = new Date();
 

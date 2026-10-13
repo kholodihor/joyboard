@@ -2,7 +2,6 @@
 
 import { FC, JSX, useCallback } from 'react';
 import { FiCalendar, FiCopy, FiTag, FiTrash2, FiUsers } from 'react-icons/fi';
-import { useParams } from 'next/navigation';
 
 import { toast } from 'sonner';
 
@@ -15,50 +14,54 @@ import AddCardDate from './add-card-date';
 import AddCardLabel from './add-card-label';
 import AddCardMember from './add-card-member';
 
+const actionButtonClass =
+  'w-full justify-start bg-gray-50 text-gray-700 hover:bg-gray-100';
+
 interface CardActionsProps {
   cardData: Card;
   onCardUpdate: (card: Card) => Promise<void>;
+  onDeleted?: () => void;
 }
 
 const CardActions: FC<CardActionsProps> = ({
   cardData,
   onCardUpdate,
+  onDeleted,
 }): JSX.Element | null => {
-  const { boardId }: { boardId: string } = useParams();
-
   const handleCopy = useCallback(async () => {
     if (!cardData?.id) return;
 
     try {
-      const res = await copyCard({ id: cardData.id, boardId });
+      const res = await copyCard({ id: cardData.id });
       if (res.success) {
         toast.success('Card successfully copied');
       } else {
-        toast.error(res.error || 'Failed to copy card');
+        toast.error(res.error);
       }
     } catch (error) {
       console.error('Error copying card:', error);
       toast.error('Failed to copy card');
     }
-  }, [cardData?.id, boardId]);
+  }, [cardData?.id]);
 
   const handleDelete = useCallback(async () => {
     if (!cardData?.id) return;
 
     if (confirm('Are you sure you want to delete this card?')) {
       try {
-        const res = await deleteCard({ id: cardData.id, boardId });
+        const res = await deleteCard({ id: cardData.id });
         if (res.success) {
           toast.success('Card deleted');
+          onDeleted?.();
         } else {
-          toast.error('Failed to delete card');
+          toast.error(res.error);
         }
       } catch (error) {
         console.error('Error deleting card:', error);
         toast.error('Failed to delete card');
       }
     }
-  }, [cardData?.id, boardId]);
+  }, [cardData?.id, onDeleted]);
 
   // Return null while data is loading
   if (!cardData?.id) return null;
@@ -72,15 +75,8 @@ const CardActions: FC<CardActionsProps> = ({
 
       <div className="grid gap-2">
         <div className="group relative">
-          <AddCardMember
-            card={cardData}
-            boardId={boardId}
-            onCardUpdate={onCardUpdate}
-          >
-            <Button
-              className="w-full justify-start bg-gray-50 text-gray-700 hover:bg-gray-100"
-              size="sm"
-            >
+          <AddCardMember card={cardData} onCardUpdate={onCardUpdate}>
+            <Button className={actionButtonClass} size="sm">
               <FiUsers className="mr-2 h-4 w-4" />
               Members
             </Button>
@@ -88,15 +84,8 @@ const CardActions: FC<CardActionsProps> = ({
         </div>
 
         <div className="group relative">
-          <AddCardLabel
-            card={cardData}
-            boardId={boardId}
-            onCardUpdate={onCardUpdate}
-          >
-            <Button
-              className="w-full justify-start bg-gray-50 text-gray-700 hover:bg-gray-100"
-              size="sm"
-            >
+          <AddCardLabel card={cardData} onCardUpdate={onCardUpdate}>
+            <Button className={actionButtonClass} size="sm">
               <FiTag className="mr-2 h-4 w-4" />
               Labels
             </Button>
@@ -104,15 +93,8 @@ const CardActions: FC<CardActionsProps> = ({
         </div>
 
         <div className="group relative">
-          <AddCardDate
-            card={cardData}
-            boardId={boardId}
-            onCardUpdate={onCardUpdate}
-          >
-            <Button
-              className="w-full justify-start bg-gray-50 text-gray-700 hover:bg-gray-100"
-              size="sm"
-            >
+          <AddCardDate card={cardData} onCardUpdate={onCardUpdate}>
+            <Button className={actionButtonClass} size="sm">
               <FiCalendar className="mr-2 h-4 w-4" />
               Date
             </Button>
@@ -126,11 +108,7 @@ const CardActions: FC<CardActionsProps> = ({
       </div>
 
       <div className="grid gap-2">
-        <Button
-          className="w-full justify-start bg-gray-50 text-gray-700 hover:bg-gray-100"
-          size="sm"
-          onClick={handleCopy}
-        >
+        <Button className={actionButtonClass} size="sm" onClick={handleCopy}>
           <FiCopy className="mr-2 h-4 w-4" />
           Copy
         </Button>

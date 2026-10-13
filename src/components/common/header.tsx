@@ -4,6 +4,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { signOut, useSession } from 'next-auth/react';
 
+import { AVATAR_PLACEHOLDER } from '@/constants/images';
+
 const Header = () => {
   const session = useSession();
   return (
@@ -39,7 +41,7 @@ const Header = () => {
               Logout
             </div>
             <Image
-              src={session.data.user?.image || '/logo.png'}
+              src={session.data.user?.image || AVATAR_PLACEHOLDER}
               className="h-8 w-8 cursor-pointer rounded-full"
               width={30}
               height={30}

@@ -16,20 +16,20 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
-import { Board } from '@/types';
 
 import { Button } from '../ui/button';
 
-const DeleteBoard = ({ board }: { board: Board }) => {
+const DeleteBoard = ({ board }: { board: { id: string } }) => {
   const router = useRouter();
   const handleDelete = async () => {
     if (confirm('Are you sure you want to delete this board?')) {
-      const data = { id: board.id };
-      const result: any = await deleteBoard(data);
-      router.push('/boards');
-      if (result?.error) {
-        toast.error('board not deleted');
+      const result = await deleteBoard({ id: board.id });
+      if ('error' in result) {
+        toast.error(result.error);
+        return;
       }
+      toast.success('Board deleted');
+      router.push('/boards');
     }
   };
 

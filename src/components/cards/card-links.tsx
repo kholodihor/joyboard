@@ -1,19 +1,15 @@
 'use client';
 
-import React, { FC, useCallback, useEffect, useRef, useState } from 'react';
-import { FaRegTrashCan } from 'react-icons/fa6';
-
-import { toast } from 'sonner';
+import React, { FC, useState } from 'react';
 
 import { addCardLink, removeCardLink } from '@/app/actions/card';
+import { saveCard } from '@/lib/save-card';
 import { Card } from '@/types';
 
-import FormSubmit from '../atomic/form-submit';
-import TextAreaForm from '../atomic/textarea-form';
 import { Button } from '../ui/button';
-import { Skeleton } from '../ui/skeleton';
 
-import SubTitle from './sub-title';
+import CardSection, { RemoveItemButton } from './card-section';
+import { InlineTextForm } from './inline-text-form';
 
 interface CardLinksProps {
   cardData: Card;
@@ -25,155 +21,83 @@ const CardLinks: FC<CardLinksProps> = ({
   onCardUpdate,
 }): React.JSX.Element => {
   const [isOpen, setIsOpen] = useState(false);
-  const [links, setLinks] = useState<string[]>([]);
-  const formRef = useRef<HTMLFormElement>(null);
   const [isEditable, setIsEditable] = useState(false);
+  const links = cardData.links ?? [];
 
-  useEffect(() => {
-    if (!cardData) return;
-    setLinks(cardData.links || []);
-  }, [cardData]);
+  const handleSubmit = async (newLink: string): Promise<boolean> => {
+    const saved = await saveCard({
+      previous: cardData,
+      next: { ...cardData, links: [...links, newLink] },
+      onCardUpdate,
+      action: card => addCardLink({ card }),
+      successMessage: 'Your link added to card',
+      errorMessage: 'Failed to add link',
+    });
+    if (saved) setIsEditable(false);
+    return saved;
+  };
 
-  const handleSubmit = useCallback(
-    async (e: React.FormEvent): Promise<void> => {
-      e.preventDefault();
-      if (!formRef.current) return;
-
-      const formData = new FormData(formRef.current);
-      const newLink = formData.get('link') as string;
-
-      if (!newLink.trim()) {
-        toast.error('Link cannot be empty');
-        return;
-      }
-
-      try {
-        const updatedLinks = [...links, newLink];
-        const updatedCard = {
-          ...cardData,
-          links: updatedLinks,
-        };
-
-        setLinks(updatedLinks);
-        await onCardUpdate(updatedCard);
-
-        const res = await addCardLink({ card: updatedCard });
-
-        if (res?.success) {
-          toast.success('Your link added to card');
-          formRef.current?.reset();
-          setIsEditable(false);
-        }
-      } catch (error) {
-        console.error('Failed to add link:', error);
-        toast.error('Failed to add link');
-      }
-    },
-    [cardData, links, onCardUpdate],
-  );
-
-  const handleRemove = useCallback(
-    async (index: number): Promise<void> => {
-      try {
-        const updatedLinks = links.filter((_, i) => i !== index);
-        const updatedCard = {
-          ...cardData,
-          links: updatedLinks,
-        };
-
-        setLinks(updatedLinks);
-        await onCardUpdate(updatedCard);
-
-        const res = await removeCardLink({ card: updatedCard });
-
-        if (res?.success) {
-          toast.success('Link removed from card');
-        }
-      } catch (error) {
-        console.error('Failed to remove link:', error);
-        toast.error('Failed to remove link');
-      }
-    },
-    [cardData, links, onCardUpdate],
-  );
-
-  const editEnable = (): void => setIsEditable(true);
-  const editDisable = (): void => setIsEditable(false);
+  const handleRemove = (index: number) =>
+    saveCard({
+      previous: cardData,
+      next: { ...cardData, links: links.filter((_, i) => i !== index) },
+      onCardUpdate,
+      action: card => removeCardLink({ card }),
+      successMessage: 'Link removed from card',
+      errorMessage: 'Failed to remove link',
+    });
 
   if (isEditable) {
     return (
       <div>
-        <form onSubmit={handleSubmit} ref={formRef} className="space-y-4">
-          <TextAreaForm id="link" placeholder="Add Link" />
-          <div className="flex items-center gap-x-2">
-            <FormSubmit>Add Link</FormSubmit>
-            <Button
-              type="button"
-              onClick={editDisable}
-              size="sm"
-              variant="ghost"
-            >
-              Cancel
-            </Button>
-          </div>
-        </form>
+        <InlineTextForm
+          name="link"
+          placeholder="Add Link"
+          submitLabel="Add Link"
+          emptyMessage="Link cannot be empty"
+          onSubmit={handleSubmit}
+          onCancel={() => setIsEditable(false)}
+          className="space-y-4"
+          textareaClassName=""
+          actionsClassName="flex items-center gap-x-2"
+        />
       </div>
     );
   }
 
   return (
-    <div className="mb-[1rem]">
-      <div>
-        <SubTitle
-          title="Links"
-          length={links.length}
-          isOpen={isOpen}
-          setIsOpen={setIsOpen}
-        />
-        <div
-          className={`no-scrollbar max-h-[40vh] overflow-auto ${isOpen ? 'block' : 'hidden'}`}
+    <CardSection
+      title="Links"
+      count={links.length}
+      isOpen={isOpen}
+      setIsOpen={setIsOpen}
+      footer={
+        <Button
+          onClick={() => setIsEditable(true)}
+          variant="ghost"
+          className="h-auto w-full justify-start p-2 text-sm font-normal text-muted-foreground hover:bg-gray-50"
         >
-          <div className="my-2">
-            {links ? (
-              links?.map((link: string, index: number) => (
-                <div
-                  key={index}
-                  className="mb-2 flex items-start gap-2 rounded-md bg-input p-2"
-                >
-                  <a
-                    href={link}
-                    target="_blank"
-                    className="flex-1 truncate whitespace-nowrap text-xs hover:text-blue-700"
-                  >
-                    {link}
-                  </a>
-                  <button
-                    onClick={() => handleRemove(index)}
-                    className="text-red-500"
-                  >
-                    <FaRegTrashCan />
-                  </button>
-                </div>
-              ))
-            ) : (
-              <div className="flex flex-col space-y-3">
-                <Skeleton className="h-6 w-[250px]" />
-                <Skeleton className="h-6 w-[250px]" />
-                <Skeleton className="h-6 w-[250px]" />
-                <Skeleton className="h-6 w-[250px]" />
-              </div>
-            )}
-          </div>
-          <Button
-            onClick={editEnable}
-            variant="ghost"
-            className="h-auto w-full justify-start p-2 text-sm font-normal text-muted-foreground hover:bg-gray-50"
+          Add Link
+        </Button>
+      }
+    >
+      {links.map((link: string, index: number) => (
+        // Links are plain strings with no id; the index is their identity.
+        <div
+          key={index}
+          className="mb-2 flex items-start gap-2 rounded-md bg-input p-2"
+        >
+          <a
+            href={link}
+            target="_blank"
+            className="flex-1 truncate whitespace-nowrap text-xs hover:text-blue-700"
           >
-            Add Link
-          </Button>
+            {link}
+          </a>
+          <RemoveItemButton onClick={() => handleRemove(index)} />
         </div>
-      </div>
-    </div>
+      ))}
+    </CardSection>
   );
 };
 

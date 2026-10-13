@@ -1,11 +1,10 @@
 /* eslint-disable prettier/prettier */
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-
-import { toast } from 'sonner';
+import { useCallback, useState } from 'react';
 
 import { updateCardIsCompleted } from '@/app/actions/card';
+import { saveCard } from '@/lib/save-card';
 import { Card } from '@/types';
 import {
   formatDate,
@@ -16,90 +15,46 @@ import {
 
 interface CardProps {
   cardData: Card;
-  onCardUpdate?: (card: Card) => Promise<void>;
+  onCardUpdate: (card: Card) => void | Promise<void>;
 }
 
 const CardDate = ({ cardData, onCardUpdate }: CardProps) => {
-  const [isIn24Hours, setIsIn24Hours] = useState(false);
-  const [isOutdated, setOutdated] = useState(false);
-  const [isCompleted, setIsCompleted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    if (!cardData) return;
-
-    const dateStr = cardData?.dateTo as string;
-
-    // Reset all states first
-    setIsIn24Hours(false);
-    setOutdated(false);
-    setIsCompleted(cardData.isCompleted || false);
-
-    if (cardData.isCompleted) return;
-
-    if (isLessThan24Hours(dateStr) || isToday(dateStr)) {
-      setIsIn24Hours(true);
-    } else if (isDateInPast(dateStr)) {
-      setOutdated(true);
-    }
-  }, [cardData]);
-
-  const handleIsCompleted = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.stopPropagation(); // Prevent event bubbling
-    try {
+  const handleIsCompleted = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      e.stopPropagation(); // Prevent event bubbling
       setIsLoading(true);
-      const newIsCompleted = !isCompleted;
-      const updatedCard = {
-        ...cardData,
-        isCompleted: newIsCompleted,
-      };
-
-      // Optimistic UI update
-      setIsCompleted(newIsCompleted);
-      if (newIsCompleted) {
-        setIsIn24Hours(false);
-        setOutdated(false);
-      }
-
-      // Update parent state
-      if (onCardUpdate) {
-        await onCardUpdate(updatedCard);
-      }
-
-      // Update API
-      const res = await updateCardIsCompleted({
-        card: updatedCard,
+      await saveCard({
+        previous: cardData,
+        next: { ...cardData, isCompleted: !cardData.isCompleted },
+        onCardUpdate,
+        action: c => updateCardIsCompleted({ card: c }),
+        errorMessage: 'Failed to update card status',
       });
-
-      if (!res?.success) {
-        // Revert optimistic update if API call fails
-        setIsCompleted(!newIsCompleted);
-        if (!newIsCompleted) {
-          setIsIn24Hours(true);
-          setOutdated(true);
-        }
-        toast.error('Failed to update card status');
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error('Failed to update card status');
-    } finally {
       setIsLoading(false);
-    }
-  }, [cardData, isCompleted, onCardUpdate]);
+    },
+    [cardData, onCardUpdate],
+  );
 
-  if (!cardData?.dateTo) return null;
+  if (!cardData.dateTo) return null;
+
+  const { dateTo, isCompleted } = cardData;
+  const isIn24Hours =
+    !isCompleted && (isLessThan24Hours(dateTo) || isToday(dateTo));
+  const isOutdated = !isCompleted && !isIn24Hours && isDateInPast(dateTo);
 
   return (
     <div
-      className={`flex items-center justify-start gap-2 border px-2 py-1 text-xs ${isIn24Hours
+      className={`flex items-center justify-start gap-2 border px-2 py-1 text-xs ${
+        isIn24Hours
           ? 'bg-yellow-300'
           : isOutdated
             ? 'bg-red-300'
             : isCompleted
               ? 'bg-green-300'
               : 'bg-transparent'
-        }`}
+      }`}
     >
       <input
         type="checkbox"
@@ -108,7 +63,7 @@ const CardDate = ({ cardData, onCardUpdate }: CardProps) => {
         className="h-4 w-4 cursor-pointer rounded border-gray-300 text-blue-600 focus:ring-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
         disabled={isLoading}
       />
-      {formatDate(cardData.dateTo as string)}
+      {formatDate(dateTo)}
     </div>
   );
 };

@@ -6,99 +6,50 @@ import Image from 'next/image';
 import { toast } from 'sonner';
 
 import { addCardMember, getNoCardMembers } from '@/app/actions/card';
+import { AVATAR_PLACEHOLDER } from '@/constants/images';
+import { saveCard } from '@/lib/save-card';
 import { Card, User } from '@/types';
 
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 
 interface CardProps {
   card: Card;
-  boardId: string;
   children?: React.ReactNode;
-  onCardUpdate?: (card: Card) => Promise<void>;
+  onCardUpdate: (card: Card) => void | Promise<void>;
 }
 
-const AddCardMember = ({
-  card,
-  boardId,
-  children,
-  onCardUpdate,
-}: CardProps) => {
+const AddCardMember = ({ card, children, onCardUpdate }: CardProps) => {
   const [members, setMembers] = useState<User[]>([]);
 
   useEffect(() => {
     const getMembers = async () => {
       try {
-        const response = await getNoCardMembers({
-          boardId,
-          cardId: card.id,
-        });
-        if (response?.success && response.result) {
-          // Transform the response to match User type
-          const transformedMembers: User[] = response.result.map(
-            (member: any) => ({
-              id: member.id,
-              name: member.name || '',
-              email: member.email || '',
-              image: member.image || '',
-              emailVerified: member.emailVerified?.toISOString(),
-              boardIds: member.boardIds || [],
-              cardIds: member.cardIds || [],
-            }),
-          );
-          setMembers(transformedMembers);
-        }
+        const response = await getNoCardMembers({ cardId: card.id });
+        if (response.success) setMembers(response.result);
       } catch (error) {
         console.error('Failed to fetch members:', error);
         toast.error('Failed to load members');
       }
     };
-    if (card) getMembers();
-  }, [boardId, card]);
+    getMembers();
+  }, [card.id]);
 
   const handleSubmit = useCallback(
     async (user: User) => {
-      try {
-        const updatedUser = {
-          ...user,
-          cardIds: [...(user.cardIds || []), card.id],
-        };
-        const updatedCard = {
+      // Hide the member right away; put them back if the save fails.
+      setMembers(prev => prev.filter(m => m.id !== user.id));
+      const saved = await saveCard({
+        previous: card,
+        next: {
           ...card,
-          userIds: [...(card.userIds || []), user.id],
-          users: [...(card.users || []), user],
-        };
-
-        // Optimistic UI update
-        setMembers(prev => prev.filter(m => m.id !== user.id));
-
-        // Update parent state
-        if (onCardUpdate) {
-          await onCardUpdate(updatedCard);
-        }
-
-        // API update
-        const res = await addCardMember({
-          user: updatedUser,
-          card: updatedCard,
-        });
-
-        if (!res?.success) {
-          // Revert optimistic updates
-          setMembers(prev => [...prev, user]);
-          if (onCardUpdate) {
-            await onCardUpdate(card);
-          }
-          toast.error('Failed to add member');
-        }
-      } catch (error) {
-        console.error(error);
-        // Revert optimistic updates
-        setMembers(prev => [...prev, user]);
-        if (onCardUpdate) {
-          await onCardUpdate(card);
-        }
-        toast.error('Failed to add member');
-      }
+          userIds: [...card.userIds, user.id],
+          users: [...card.users, user],
+        },
+        onCardUpdate,
+        action: c => addCardMember({ user, card: c }),
+        errorMessage: 'Failed to add member',
+      });
+      if (!saved) setMembers(prev => [...prev, user]);
     },
     [card, onCardUpdate],
   );
@@ -117,8 +68,8 @@ const AddCardMember = ({
             >
               <div className="relative h-6 w-6">
                 <Image
-                  src={member.image || ''}
-                  alt={member.name}
+                  src={member.image || AVATAR_PLACEHOLDER}
+                  alt={member.name ?? ''}
                   className="rounded-full"
                   fill
                 />

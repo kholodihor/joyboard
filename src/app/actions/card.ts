@@ -1,538 +1,242 @@
 'use server';
 
+import type { Prisma } from '@prisma/client';
 import { z } from 'zod';
 
-import { getAuthSession } from '@/lib/auth';
+import {
+  AccessError,
+  requireBoardAccess,
+  requireCardAccess,
+  requireListAccess,
+  toErrorMessage,
+} from '@/lib/access';
 import { prisma } from '@/lib/prisma';
 import { revalidateBoard, revalidateCard } from '@/lib/revalidate';
 import { Card, UpdateCard, User } from '@/types';
 
-type CardResponse =
-  | { success: true; result: any }
+export type CardResponse<T> =
+  | { success: true; result: T }
   | { success: false; error: string };
 
-// Helper function for authentication
-const authenticateUser = async () => {
-  const session = await getAuthSession();
-  if (!session) {
-    throw new Error('Unauthorized');
-  }
-  return session;
-};
+// Same shape as GET /api/card/[cardId], so the modal can drop results straight
+// into its SWR cache without losing members.
+const cardInclude = { list: true, users: true } as const;
 
-// Helper function for error handling
-const handleServerError = (error: unknown, message: string) => {
-  console.error(`Error: ${message}`, error);
-  return { error: message };
-};
-
-export const createCard = async (data: {
-  title: string;
-  listId: string;
-  boardId: string;
-}) => {
+const run = async <T>(
+  fallback: string,
+  fn: () => Promise<T>,
+): Promise<CardResponse<T>> => {
   try {
-    await authenticateUser();
-
-    const { title, listId, boardId } = data;
-    const list = await prisma.list.findUnique({ where: { id: listId } });
-    if (!list) {
-      return { error: 'List not found' };
-    }
-
-    const lastCard = await prisma.card.findFirst({
-      where: { listId },
-      orderBy: { order: 'desc' },
-      select: { order: true },
-    });
-
-    const order = lastCard ? lastCard.order + 1 : 1;
-    const card = await prisma.card.create({
-      data: {
-        title,
-        listId,
-        boardId,
-        order,
-        label: [],
-        comments: [],
-        links: [],
-        trackedTimes: [],
-        todos: [],
-        dateTo: null,
-      },
-    });
-
-    revalidateBoard(boardId);
-    return { success: true, result: card };
+    return { success: true, result: await fn() };
   } catch (error) {
-    return {
-      success: false,
-      ...handleServerError(error, 'Failed to create card'),
-    };
+    return { success: false, error: toErrorMessage(error, fallback) };
   }
 };
 
-// update card
-export const updateCard = async (data: z.infer<typeof UpdateCard>) => {
-  try {
-    await authenticateUser();
+const nextOrder = async (listId: string) => {
+  const lastCard = await prisma.card.findFirst({
+    where: { listId },
+    orderBy: { order: 'desc' },
+    select: { order: true },
+  });
+  return lastCard ? lastCard.order + 1 : 1;
+};
 
-    const { boardId, id, ...values } = data;
+const updateCardFields = (
+  cardId: string,
+  data: Prisma.CardUpdateInput,
+  fallback: string,
+) =>
+  run(fallback, async () => {
+    const { boardId } = await requireCardAccess(cardId);
     const card = await prisma.card.update({
-      where: { id },
-      data: { ...values },
+      where: { id: cardId },
+      data,
+      include: cardInclude,
     });
-    revalidateCard(boardId, id);
-    return { success: true, result: card };
-  } catch (error) {
-    return {
-      success: false,
-      ...handleServerError(error, 'Failed to update card'),
-    };
+    revalidateCard(boardId, cardId);
+    return card;
+  });
+
+export const createCard = async (data: { title: string; listId: string }) =>
+  run('Failed to create card', async () => {
+    const { listId } = data;
+    const title = data.title?.trim();
+    if (!title) throw new AccessError('Card title is required.');
+
+    const { boardId } = await requireListAccess(listId);
+    const card = await prisma.card.create({
+      data: { title, listId, boardId, order: await nextOrder(listId) },
+    });
+    revalidateBoard(boardId);
+    return card;
+  });
+
+export const updateCard = async (data: z.infer<typeof UpdateCard>) => {
+  const parsed = UpdateCard.safeParse(data);
+  if (!parsed.success) {
+    return { success: false as const, error: 'Invalid card data' };
   }
+  const { id, title, description } = parsed.data;
+  return updateCardFields(id, { title, description }, 'Failed to update card');
 };
 
-// copy card
-export const copyCard = async (data: { id: string; boardId: string }) => {
-  try {
-    await authenticateUser();
-
-    const { id, boardId } = data;
-    const originalCard = await prisma.card.findUnique({ where: { id } });
-
-    if (!originalCard) {
-      return {
-        error: 'card not exist',
-      };
-    }
-    const lastCard = await prisma.card.findFirst({
-      where: { listId: originalCard?.listId },
-      orderBy: { order: 'desc' },
-      select: { order: true },
+export const copyCard = async (data: { id: string }) =>
+  run('Failed to copy card', async () => {
+    const { boardId } = await requireCardAccess(data.id);
+    const original = await prisma.card.findUniqueOrThrow({
+      where: { id: data.id },
     });
-    const order = lastCard ? lastCard.order + 1 : 1;
 
     const card = await prisma.card.create({
       data: {
-        title: `${originalCard?.title} - copy`,
-        description: originalCard?.description,
-        label: [],
-        comments: [],
-        trackedTimes: [],
-        todos: [],
-        links: [],
-        dateTo: null,
-        listId: originalCard.listId,
+        title: `${original.title} - copy`,
+        description: original.description,
+        listId: original.listId,
         boardId,
-        order,
+        order: await nextOrder(original.listId),
       },
+    });
+    revalidateBoard(boardId);
+    return card;
+  });
+
+export const deleteCard = async (data: { id: string }) =>
+  run('Failed to delete card', async () => {
+    const { boardId } = await requireCardAccess(data.id);
+    const card = await prisma.card.delete({ where: { id: data.id } });
+    revalidateCard(boardId, data.id);
+    return card;
+  });
+
+export const getNoCardMembers = async (data: { cardId: string }) =>
+  run('Failed to get non-card members', async () => {
+    const { boardId } = await requireCardAccess(data.cardId);
+    return prisma.user.findMany({
+      where: {
+        boards: { some: { id: boardId } },
+        NOT: { cards: { some: { id: data.cardId } } },
+      },
+    });
+  });
+
+export const addCardMember = async (data: { user: User; card: Card }) =>
+  run('Failed to add card member', async () => {
+    const { boardId } = await requireCardAccess(data.card.id);
+    const isBoardMember = await prisma.user.count({
+      where: { id: data.user.id, boardIds: { has: boardId } },
+    });
+    if (!isBoardMember) {
+      throw new AccessError('User is not a member of this board.');
+    }
+
+    const card = await prisma.card.update({
+      where: { id: data.card.id },
+      data: { users: { connect: { id: data.user.id } } },
+      include: cardInclude,
     });
     revalidateCard(boardId, card.id);
-    return { success: true, result: card };
-  } catch (error) {
-    return {
-      success: false,
-      ...handleServerError(error, 'Failed to copy card'),
-    };
-  }
-};
+    return card;
+  });
 
-// delete card
-export const deleteCard = async (data: { id: string; boardId: string }) => {
-  try {
-    await authenticateUser();
+export const removeMemberFromCard = async (data: { user: User; card: Card }) =>
+  updateCardFields(
+    data.card.id,
+    { users: { disconnect: { id: data.user.id } } },
+    'Failed to remove card member',
+  );
 
-    const { id, boardId } = data;
-    const card = await prisma.card.delete({
-      where: { id },
-    });
-    revalidateCard(boardId, id);
-    return { success: true, result: card };
-  } catch (error) {
-    return {
-      success: false,
-      ...handleServerError(error, 'Failed to delete card'),
-    };
-  }
-};
+export const updateCardLabel = async ({ card }: { card: Card }) =>
+  updateCardFields(
+    card.id,
+    { label: card.label },
+    'Failed to update card label',
+  );
 
-// get no card members
-export const getNoCardMembers = async (data: {
+export const updateCardIsCompleted = async ({ card }: { card: Card }) =>
+  updateCardFields(
+    card.id,
+    { isCompleted: card.isCompleted },
+    'Failed to update card completion status',
+  );
+
+export const updateCardDate = async ({ card }: { card: Card }) =>
+  updateCardFields(
+    card.id,
+    { dateTo: card.dateTo || null },
+    'Failed to update card date',
+  );
+
+export const updateCardTrackedTimes = async ({ card }: { card: Card }) =>
+  updateCardFields(
+    card.id,
+    { trackedTimes: card.trackedTimes },
+    'Failed to update card tracked times',
+  );
+
+export const addCardComment = async ({ card }: { card: Card }) =>
+  updateCardFields(
+    card.id,
+    { comments: card.comments },
+    'Failed to add card comment',
+  );
+
+export const removeCardComment = async ({ card }: { card: Card }) =>
+  updateCardFields(
+    card.id,
+    { comments: card.comments },
+    'Failed to delete card comment',
+  );
+
+export const addCardTodo = async ({ card }: { card: Card }) =>
+  updateCardFields(card.id, { todos: card.todos }, 'Failed to add card todo');
+
+export const changeTodoCompleted = async ({ card }: { card: Card }) =>
+  updateCardFields(card.id, { todos: card.todos }, 'Failed to update todo');
+
+export const removeCardTodo = async ({ card }: { card: Card }) =>
+  updateCardFields(
+    card.id,
+    { todos: card.todos },
+    'Failed to delete card todo',
+  );
+
+export const addCardLink = async ({ card }: { card: Card }) =>
+  updateCardFields(card.id, { links: card.links }, 'Failed to add card link');
+
+export const removeCardLink = async ({ card }: { card: Card }) =>
+  updateCardFields(
+    card.id,
+    { links: card.links },
+    'Failed to delete card link',
+  );
+
+export const reorderCard = async (data: {
+  items: { id: string; order: number; listId: string }[];
   boardId: string;
-  cardId: string;
-}) => {
-  try {
-    await authenticateUser();
+}) =>
+  run('Failed to reorder cards', async () => {
+    const { boardId, items } = data;
+    await requireBoardAccess(boardId);
 
-    const { boardId, cardId } = data;
-    const users = await prisma.user.findMany({
-      where: {
-        boards: {
-          some: { id: boardId },
-        },
-        NOT: {
-          cards: {
-            some: { id: cardId },
-          },
-        },
-      },
-    });
-    revalidateBoard(boardId);
-    return { success: true, result: users };
-  } catch (error) {
-    return {
-      success: false,
-      ...handleServerError(error, 'Failed to get non-card members'),
-    };
-  }
-};
-
-// add card members
-export const addCardMember = async (data: { user: User; card: Card }) => {
-  try {
-    await authenticateUser();
-    const { user, card } = data;
-
-    const [updateUser, updatedCard] = await prisma.$transaction([
-      prisma.user.update({
-        where: { id: user.id },
-        data: {
-          cardIds: { push: card.id },
-        },
-      }),
-      prisma.card.update({
-        where: { id: card.id },
-        data: {
-          userIds: { push: user.id },
-        },
-      }),
-    ]);
-
-    revalidateCard(card.boardId, card.id);
-    return { success: true, result: { updateUser, updatedCard } };
-  } catch (error) {
-    return {
-      success: false,
-      ...handleServerError(error, 'Failed to add card member'),
-    };
-  }
-};
-
-export const removeMemberFromCard = async (data: {
-  user: User;
-  card: Card;
-}) => {
-  try {
-    await authenticateUser();
-    const { user, card } = data;
-
-    const [updatedUser, updatedCard] = await prisma.$transaction([
-      prisma.user.update({
-        where: { id: user.id },
-        data: {
-          cardIds: { set: user?.cardIds?.filter(id => id !== card.id) }, // Remove card ID from user's cardIds
-        },
-      }),
-      prisma.card.update({
-        where: { id: card.id },
-        data: {
-          userIds: { set: card?.userIds?.filter(id => id !== user.id) }, // Remove user ID from card's userIds
-        },
-      }),
-    ]);
-
-    revalidateCard(card.boardId, card.id);
-    return { success: true, result: { updatedUser, updatedCard } };
-  } catch (error) {
-    return {
-      success: false,
-      ...handleServerError(error, 'Failed to remove card member'),
-    };
-  }
-};
-
-//update label of the card
-export const updateCardLabel = async (data: { card: Card }) => {
-  try {
-    await authenticateUser();
-    const { card } = data;
-
-    const updatedCard = await prisma.card.update({
-      where: { id: card.id },
-      data: {
-        label: card.label,
-      },
-    });
-
-    revalidateCard(card.boardId, card.id);
-    return { success: true, result: updatedCard };
-  } catch (error) {
-    return {
-      success: false,
-      ...handleServerError(error, 'Failed to update card label'),
-    };
-  }
-};
-
-//update isCompleted of the card
-export const updateCardIsCompleted = async (data: { card: Card }) => {
-  try {
-    await authenticateUser();
-    const { card } = data;
-
-    const updatedCard = await prisma.card.update({
-      where: { id: card.id },
-      data: {
-        isCompleted: card.isCompleted,
-      },
-    });
-
-    revalidateCard(card.boardId, card.id);
-    return { success: true, result: updatedCard };
-  } catch (error) {
-    return {
-      success: false,
-      ...handleServerError(error, 'Failed to update card completion status'),
-    };
-  }
-};
-
-//add  comment to the card
-export const addCardComment = async (data: { card: Card }) => {
-  try {
-    await authenticateUser();
-    const { card } = data;
-
-    const updatedCard = await prisma.card.update({
-      where: { id: card.id },
-      data: {
-        comments: card.comments,
-      },
-    });
-
-    revalidateCard(card.boardId, card.id);
-    return { success: true, result: updatedCard };
-  } catch (error) {
-    return {
-      success: false,
-      ...handleServerError(error, 'Failed to add card comment'),
-    };
-  }
-};
-
-//remove comment from the card
-export const removeCardComment = async (data: {
-  card: Card;
-}): Promise<CardResponse> => {
-  try {
-    await authenticateUser();
-    const { card } = data;
-
-    const updatedCard = await prisma.card.update({
-      where: { id: card.id },
-      data: {
-        comments: card.comments,
-      },
-    });
-    revalidateCard(card.boardId, card.id);
-    return { success: true, result: updatedCard };
-  } catch (error) {
-    return {
-      success: false,
-      ...handleServerError(error, 'Failed to delete card comment'),
-    };
-  }
-};
-
-//add todo to the card
-export const addCardTodo = async (data: { card: Card }) => {
-  try {
-    await authenticateUser();
-    const { card } = data;
-
-    const updatedCard = await prisma.card.update({
-      where: { id: card.id },
-      data: {
-        todos: card.todos,
-      },
-    });
-
-    revalidateCard(card.boardId, card.id);
-    return { success: true, result: updatedCard };
-  } catch (error) {
-    return {
-      success: false,
-      ...handleServerError(error, 'Failed to add card todo'),
-    };
-  }
-};
-
-//update todo completed
-export const changeTodoCompleted = async (data: {
-  card: Card;
-}): Promise<CardResponse> => {
-  try {
-    await authenticateUser();
-    const { card } = data;
-
-    const updatedCard = await prisma.card.update({
-      where: { id: card.id },
-      data: {
-        todos: card.todos,
-      },
-    });
-
-    revalidateCard(card.boardId, card.id);
-    return { success: true, result: updatedCard };
-  } catch (error) {
-    return {
-      success: false,
-      ...handleServerError(error, 'Failed to add card todo'),
-    };
-  }
-};
-
-//remove todo from the card
-export const removeCardTodo = async (data: {
-  card: Card;
-}): Promise<CardResponse> => {
-  try {
-    await authenticateUser();
-    const { card } = data;
-
-    const updatedCard = await prisma.card.update({
-      where: { id: card.id },
-      data: {
-        todos: card.todos,
-      },
-    });
-    revalidateCard(card.boardId, card.id);
-    return { success: true, result: updatedCard };
-  } catch (error) {
-    return {
-      success: false,
-      ...handleServerError(error, 'Failed to delete card todo'),
-    };
-  }
-};
-
-//add link to the card
-export const addCardLink = async (data: { card: Card }) => {
-  try {
-    await authenticateUser();
-    const { card } = data;
-
-    const updatedCard = await prisma.card.update({
-      where: { id: card.id },
-      data: {
-        links: card.links,
-      },
-    });
-
-    revalidateCard(card.boardId, card.id);
-    return { success: true, result: updatedCard };
-  } catch (error) {
-    return {
-      success: false,
-      ...handleServerError(error, 'Failed to add card link'),
-    };
-  }
-};
-
-//remove link from the card
-export const removeCardLink = async (data: {
-  card: Card;
-}): Promise<CardResponse> => {
-  try {
-    await authenticateUser();
-    const { card } = data;
-
-    const updatedCard = await prisma.card.update({
-      where: { id: card.id },
-      data: {
-        links: card.links,
-      },
-    });
-    revalidateCard(card.boardId, card.id);
-    return { success: true, result: updatedCard };
-  } catch (error) {
-    return {
-      success: false,
-      ...handleServerError(error, 'Failed to delete card link'),
-    };
-  }
-};
-
-//update card date
-export const updateCardDate = async (data: { card: Card }) => {
-  try {
-    await authenticateUser();
-    const { card } = data;
-
-    const updatedCard = await prisma.card.update({
-      where: { id: card.id },
-      data: {
-        dateTo: card.dateTo,
-      },
-    });
-
-    revalidateCard(card.boardId, card.id);
-    return { success: true, result: { updatedCard } };
-  } catch (error) {
-    return {
-      success: false,
-      ...handleServerError(error, 'Failed to update card date'),
-    };
-  }
-};
-
-// re order card
-export const reorderCard = async (data: { items: any[]; boardId: string }) => {
-  try {
-    await authenticateUser();
-    const { items, boardId } = data;
+    // Cards may only move between lists of this board.
+    const boardListIds = new Set(
+      (
+        await prisma.list.findMany({ where: { boardId }, select: { id: true } })
+      ).map(list => list.id),
+    );
+    if (items.some(item => !boardListIds.has(item.listId))) {
+      throw new AccessError('Invalid list.');
+    }
 
     const cards = await prisma.$transaction(
       items.map(card =>
         prisma.card.update({
-          where: { id: card.id },
-          data: {
-            order: card.order,
-            listId: card.listId,
-          },
+          where: { id: card.id, boardId },
+          data: { order: card.order, listId: card.listId },
         }),
       ),
     );
-
     revalidateBoard(boardId);
-    return { success: true, result: cards };
-  } catch (error) {
-    return {
-      success: false,
-      ...handleServerError(error, 'Failed to reorder cards'),
-    };
-  }
-};
-
-//tracked time
-export const updateCardTrackedTimes = async (data: { card: Card }) => {
-  try {
-    await authenticateUser();
-    const { card } = data;
-
-    const updatedCard = await prisma.card.update({
-      where: { id: card.id },
-      data: {
-        trackedTimes: card.trackedTimes,
-      },
-    });
-
-    revalidateCard(card.boardId, card.id);
-    return { success: true, result: { updatedCard } };
-  } catch (error) {
-    return {
-      success: false,
-      ...handleServerError(error, 'Failed to update card tracked times'),
-    };
-  }
-};
+    return cards;
+  });

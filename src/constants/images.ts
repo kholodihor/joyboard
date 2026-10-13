@@ -54,3 +54,5 @@ export const defaultImages = [
     name: 'pokemons',
   },
 ];
+
+export const AVATAR_PLACEHOLDER = '/avatar-placeholder.webp';

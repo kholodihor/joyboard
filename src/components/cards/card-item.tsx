@@ -1,6 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FaTools } from 'react-icons/fa';
 import { FiMessageCircle } from 'react-icons/fi';
 import { GoPaperclip } from 'react-icons/go';
@@ -8,26 +7,22 @@ import { IoClose } from 'react-icons/io5';
 import Image from 'next/image';
 
 import { Draggable } from '@hello-pangea/dnd';
-import { toast } from 'sonner';
 
 import { updateCardLabel } from '@/app/actions/card';
-import { labels } from '@/constants/labels';
+import { AVATAR_PLACEHOLDER } from '@/constants/images';
+import { getLabelColor } from '@/constants/labels';
+import { saveCard } from '@/lib/save-card';
 import { Card } from '@/types';
 
 import CardDate from './card-date';
 import CardModal from './card-modal';
 import TimeTracker from './time-tracker';
 
-const getColor = (id: string) => {
-  const foundLabel = labels.find(label => label.id === id);
-  return foundLabel?.color;
-};
-
 const CardItem = ({
-  card,
+  card: cardProp,
   index,
   // eslint-disable-next-line prettier/prettier
-  onClick = () => { },
+  onClick = () => {},
 }: {
   card: Card;
   index: number;
@@ -35,28 +30,23 @@ const CardItem = ({
 }) => {
   const [isModal, setIsModal] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  // Local copy so optimistic edits show immediately; re-synced when the prop changes.
+  const [card, setCard] = useState(cardProp);
+  useEffect(() => setCard(cardProp), [cardProp]);
 
   const handleRemoveLabel = async (labelId: string, e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent modal from opening
     if (isUpdating) return;
 
-    try {
-      setIsUpdating(true);
-      const updatedCard = {
-        ...card,
-        label: card.label.filter(id => id !== labelId),
-      };
-
-      const response = await updateCardLabel({ card: updatedCard });
-      if (!response.success) {
-        console.log(response);
-      }
-    } catch (error) {
-      console.log(error);
-      toast.error('Failed to remove label');
-    } finally {
-      setIsUpdating(false);
-    }
+    setIsUpdating(true);
+    await saveCard({
+      previous: card,
+      next: { ...card, label: card.label.filter(id => id !== labelId) },
+      onCardUpdate: setCard,
+      action: c => updateCardLabel({ card: c }),
+      errorMessage: 'Failed to remove label',
+    });
+    setIsUpdating(false);
   };
 
   const handleCardClick = (e: React.MouseEvent) => {
@@ -85,7 +75,7 @@ const CardItem = ({
                     <div
                       key={item}
                       className="group/label relative h-2 w-8 rounded-full"
-                      style={{ backgroundColor: getColor(item) }}
+                      style={{ backgroundColor: getLabelColor(item) }}
                     >
                       <button
                         onClick={e => handleRemoveLabel(item, e)}
@@ -111,7 +101,7 @@ const CardItem = ({
                   e.stopPropagation();
                 }}
               >
-                <CardDate cardData={card} />
+                <CardDate cardData={card} onCardUpdate={setCard} />
               </div>
 
               {/* Footer - Metadata */}
@@ -129,7 +119,7 @@ const CardItem = ({
                       <span className="text-xs">{card.comments.length}</span>
                     </div>
                   )}
-                  {card?.todos.length ? (
+                  {card.todos?.length ? (
                     <div className="flex items-center">
                       <FaTools className="h-3.5 w-3.5" />
                     </div>
@@ -142,15 +132,12 @@ const CardItem = ({
                     {card.users.slice(0, 3).map(user => (
                       <div key={user.id} className="group relative">
                         <Image
-                          src={user.image || '/logo.jpg'}
+                          src={user.image || AVATAR_PLACEHOLDER}
                           alt={user.name || 'User'}
                           width={24}
                           height={24}
                           className="-ml-2 h-6 w-6 rounded-full ring-2 ring-white first:ml-0"
                         />
-                        {/* <div className="absolute left-full top-0 z-10 ml-2 hidden whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-xs text-white group-hover:block">
-                          {user.name || 'User'}
-                        </div> */}
                       </div>
                     ))}
                     {card.users.length > 3 && (

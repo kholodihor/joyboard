@@ -11,7 +11,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { List } from '@/types';
+import type { List } from '@/types';
 
 import FormSubmit from '../atomic/form-submit';
 import { Button } from '../ui/button';
@@ -22,14 +22,12 @@ const ListOption = ({ list }: { list: List }) => {
     e.preventDefault();
     if (confirm('Are you sure you want to delete this list?')) {
       try {
-        if (!list?.id || !list?.boardId) {
-          toast.error('Something went wrong');
+        const res = await deleteList({ id: list.id });
+        if (res.error) {
+          toast.error(res.error);
           return;
         }
-        const res = await deleteList({ id: list?.id, boardId: list?.boardId });
-        if (res?.result) {
-          toast.success('List deleted successfully');
-        }
+        toast.success('List deleted successfully');
       } catch (error) {
         console.log(error);
         toast.error('List not deleted');

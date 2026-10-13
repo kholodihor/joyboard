@@ -1,10 +1,9 @@
 'use client';
 
-import { useCallback, useState } from 'react';
-
-import { toast } from 'sonner';
+import { useCallback } from 'react';
 
 import { updateCardDate } from '@/app/actions/card';
+import { saveCard } from '@/lib/save-card';
 import { Card } from '@/types';
 
 import { Calendar } from '../ui/calendar';
@@ -12,56 +11,23 @@ import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 
 interface CardProps {
   card: Card;
-  boardId: string;
   children?: React.ReactNode;
-  onCardUpdate?: (card: Card) => Promise<void>;
+  onCardUpdate: (card: Card) => void | Promise<void>;
 }
 
 const AddCardDate = ({ card, children, onCardUpdate }: CardProps) => {
-  const [date, setDate] = useState<Date>(
-    card.dateTo ? new Date(card.dateTo) : new Date(),
-  );
+  // Cards from the SWR cache carry dates as ISO strings, so always wrap them.
+  const selected = card.dateTo ? new Date(card.dateTo) : new Date();
 
   const handleDateChange = useCallback(
     async (newDate: Date | undefined) => {
-      if (!card) return;
-
-      try {
-        const updatedCard = {
-          ...card,
-          dateTo: newDate || new Date(), // Provide default date if undefined
-        };
-
-        // Update UI optimistically
-        setDate(newDate || new Date());
-
-        // Update parent state
-        if (onCardUpdate) {
-          await onCardUpdate(updatedCard);
-        }
-
-        // API update
-        const res = await updateCardDate({
-          card: updatedCard,
-        });
-
-        if (!res?.success) {
-          // Revert optimistic update
-          setDate(card.dateTo ? new Date(card.dateTo) : new Date());
-          if (onCardUpdate) {
-            await onCardUpdate(card);
-          }
-          toast.error('Failed to update date');
-        }
-      } catch (error) {
-        console.error(error);
-        // Revert optimistic update
-        setDate(card.dateTo ? new Date(card.dateTo) : new Date());
-        if (onCardUpdate) {
-          await onCardUpdate(card);
-        }
-        toast.error('Failed to update date');
-      }
+      await saveCard({
+        previous: card,
+        next: { ...card, dateTo: newDate || new Date() },
+        onCardUpdate,
+        action: c => updateCardDate({ card: c }),
+        errorMessage: 'Failed to update date',
+      });
     },
     [card, onCardUpdate],
   );
@@ -86,7 +52,7 @@ const AddCardDate = ({ card, children, onCardUpdate }: CardProps) => {
         </div>
         <Calendar
           mode="single"
-          selected={date}
+          selected={selected}
           onSelect={handleDateChange}
           className="rounded-md border"
         />

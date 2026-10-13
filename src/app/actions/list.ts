@@ -1,27 +1,38 @@
 'use server';
 
-import { revalidateTag } from 'next/cache';
-
 import { List } from '@prisma/client';
 
+import {
+  AccessError,
+  requireBoardAccess,
+  requireListAccess,
+  toErrorMessage,
+} from '@/lib/access';
 import { prisma } from '@/lib/prisma';
-
-interface ReorderListItem {
-  id: string;
-  order: number;
-}
+import { revalidateBoard } from '@/lib/revalidate';
 
 type ActionResponse<T> = Promise<
   { error: string; result?: never } | { error?: never; result: T }
 >;
 
+const run = async <T>(fallback: string, fn: () => Promise<T>) => {
+  try {
+    return { result: await fn() };
+  } catch (error) {
+    return { error: toErrorMessage(error, fallback) };
+  }
+};
+
 export const createList = async (data: {
   title: string;
   boardId: string;
-}): ActionResponse<List> => {
-  const { title, boardId } = data;
+}): ActionResponse<List> =>
+  run('Failed to create list', async () => {
+    const { boardId } = data;
+    const title = data.title?.trim();
+    if (!title) throw new AccessError('List title is required.');
 
-  try {
+    await requireBoardAccess(boardId);
     const lastList = await prisma.list.findFirst({
       where: { boardId },
       orderBy: { order: 'desc' },
@@ -29,28 +40,16 @@ export const createList = async (data: {
     });
 
     const list = await prisma.list.create({
-      data: {
-        title,
-        boardId,
-        order: lastList ? lastList.order + 1 : 1,
-      },
+      data: { title, boardId, order: lastList ? lastList.order + 1 : 1 },
     });
+    revalidateBoard(boardId);
+    return list;
+  });
 
-    revalidateTag(`board-${boardId}`, 'force');
-    return { result: list };
-  } catch (error) {
-    console.error('Failed to create list:', error);
-    return { error: 'Failed to create list' };
-  }
-};
-
-export const getLists = async ({
-  boardId,
-}: {
-  boardId: string;
-}): ActionResponse<List[]> => {
-  try {
-    const lists = await prisma.list.findMany({
+export const getLists = async ({ boardId }: { boardId: string }) =>
+  run('Failed to fetch lists', async () => {
+    await requireBoardAccess(boardId);
+    return prisma.list.findMany({
       where: { boardId },
       include: {
         cards: {
@@ -60,139 +59,49 @@ export const getLists = async ({
       },
       orderBy: { order: 'asc' },
     });
-
-    return { result: lists };
-  } catch (error) {
-    console.error('Failed to fetch lists:', error);
-    return { error: 'Failed to fetch lists' };
-  }
-};
+  });
 
 export const updateList = async (data: {
   title: string;
-  boardId: string;
   id: string;
-}): ActionResponse<List> => {
-  const { title, id, boardId } = data;
+}): ActionResponse<List> =>
+  run('Failed to update list', async () => {
+    const title = data.title?.trim();
+    if (!title) throw new AccessError('List title is required.');
 
-  try {
+    const { boardId } = await requireListAccess(data.id);
     const list = await prisma.list.update({
-      where: { id, boardId },
+      where: { id: data.id },
       data: { title },
     });
+    revalidateBoard(boardId);
+    return list;
+  });
 
-    revalidateTag(`board-${boardId}`, 'force');
-    revalidateTag(`list-${id}`, 'force');
-    return { result: list };
-  } catch (error) {
-    console.error('Failed to update list:', error);
-    return { error: 'Failed to update list' };
-  }
-};
-
-export const deleteList = async (data: {
-  id: string;
-  boardId: string;
-}): ActionResponse<List> => {
-  const { id, boardId } = data;
-
-  try {
-    const list = await prisma.list.delete({
-      where: { id, boardId },
-    });
-
-    revalidateTag(`board-${boardId}`, 'force');
-    revalidateTag(`list-${id}`, 'force');
-    return { result: list };
-  } catch (error) {
-    console.error('Failed to delete list:', error);
-    return { error: 'Failed to delete list' };
-  }
-};
+export const deleteList = async (data: { id: string }): ActionResponse<List> =>
+  run('Failed to delete list', async () => {
+    const { boardId } = await requireListAccess(data.id);
+    const list = await prisma.list.delete({ where: { id: data.id } });
+    revalidateBoard(boardId);
+    return list;
+  });
 
 export const reorderLists = async (data: {
-  items: ReorderListItem[];
+  items: { id: string; order: number }[];
   boardId: string;
-}): ActionResponse<List[]> => {
-  const { items, boardId } = data;
+}): ActionResponse<List[]> =>
+  run('Failed to reorder lists', async () => {
+    const { items, boardId } = data;
+    await requireBoardAccess(boardId);
 
-  try {
-    const transaction = items.map(list =>
-      prisma.list.update({
-        where: { id: list.id },
-        data: { order: list.order },
-      }),
+    const lists = await prisma.$transaction(
+      items.map(list =>
+        prisma.list.update({
+          where: { id: list.id, boardId },
+          data: { order: list.order },
+        }),
+      ),
     );
-
-    const lists = await prisma.$transaction(transaction);
-
-    revalidateTag(`board-${boardId}`, 'force');
-    items.forEach(item => revalidateTag(`list-${item.id}`, 'force'));
-
-    return { result: lists };
-  } catch (error) {
-    console.error('Failed to reorder lists:', error);
-    return { error: 'Failed to reorder lists' };
-  }
-};
-
-// copy list
-// export const listCopy = async (data: { id: string; boardId: string }) => {
-//   const { id, boardId } = data;
-//   let list;
-//   try {
-//     const listtoCopy = await prisma.list.findUnique({
-//       where: { id, boardId },
-//       include: {
-//         cards: true,
-//       },
-//     });
-
-//     if (!listtoCopy) {
-//       return {
-//         error: 'list not found',
-//       };
-//     }
-//     const lastList = await prisma.list.findFirst({
-//       where: { boardId },
-//       orderBy: { order: 'desc' },
-//       select: { order: true },
-//     });
-
-//     const order = lastList ? lastList.order + 1 : 1;
-
-//     list = await prisma.list.create({
-//       data: {
-//         boardId: listtoCopy.boardId,
-//         title: `${listtoCopy?.title} - copy`,
-//         order,
-//         cards: listtoCopy?.cards?.length
-//           ? {
-//             createMany: {
-//               data: listtoCopy?.cards?.map(card => ({
-//                 title: card?.title,
-//                 description: card.description,
-//                 order: card.order,
-//                 label: card.label,
-//                 comments: card.comments,
-//                 dateTo: card.dateTo,
-//                 boardId: card.boardId,
-//               })),
-//             },
-//           }
-//           : {},
-//       },
-//       include: {
-//         cards: true,
-//       },
-//     });
-//   } catch (error) {
-//     console.log(error);
-//     return {
-//       error: 'failed to copy',
-//     };
-//   }
-
-//   revalidatePath(`/board/${boardId}`);
-//   return { result: list };
-// };
+    revalidateBoard(boardId);
+    return lists;
+  });

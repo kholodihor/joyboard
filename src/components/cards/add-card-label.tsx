@@ -2,59 +2,32 @@
 
 import { useCallback } from 'react';
 
-import { toast } from 'sonner';
-
 import { updateCardLabel } from '@/app/actions/card';
 import { labels } from '@/constants/labels';
+import { saveCard } from '@/lib/save-card';
 import { Card } from '@/types';
 
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 
 interface CardProps {
   card: Card;
-  boardId: string;
   children?: React.ReactNode;
-  onCardUpdate?: (card: Card) => Promise<void>;
+  onCardUpdate: (card: Card) => void | Promise<void>;
 }
 
 const AddCardLabel = ({ card, children, onCardUpdate }: CardProps) => {
   const handleSubmit = useCallback(
     async (id: string) => {
-      try {
-        const updatedCard = { ...card };
-        if (!updatedCard.label?.includes(id)) {
-          updatedCard.label = [...(updatedCard.label || []), id];
-        } else {
-          updatedCard.label = updatedCard.label.filter(
-            labelId => labelId !== id,
-          );
-        }
-
-        // Optimistic update
-        if (onCardUpdate) {
-          await onCardUpdate(updatedCard);
-        }
-
-        // API update
-        const res = await updateCardLabel({
-          card: updatedCard,
-        });
-
-        if (!res?.success) {
-          toast.error('Failed to update label');
-          // Revert optimistic update
-          if (onCardUpdate) {
-            await onCardUpdate(card);
-          }
-        }
-      } catch (error) {
-        console.error(error);
-        toast.error('Failed to update label');
-        // Revert optimistic update
-        if (onCardUpdate) {
-          await onCardUpdate(card);
-        }
-      }
+      const label = card.label.includes(id)
+        ? card.label.filter(labelId => labelId !== id)
+        : [...card.label, id];
+      await saveCard({
+        previous: card,
+        next: { ...card, label },
+        onCardUpdate,
+        action: c => updateCardLabel({ card: c }),
+        errorMessage: 'Failed to update label',
+      });
     },
     [card, onCardUpdate],
   );
@@ -78,7 +51,7 @@ const AddCardLabel = ({ card, children, onCardUpdate }: CardProps) => {
                 />
                 <p className="text-sm">{label.title}</p>
               </div>
-              {card?.label?.includes(label.id) && (
+              {card.label.includes(label.id) && (
                 <div className="h-2 w-2 rounded-full bg-sky-500" />
               )}
             </div>

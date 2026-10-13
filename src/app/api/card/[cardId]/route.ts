@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { getAuthSession } from '@/lib/auth';
+import { AccessError, requireCardAccess } from '@/lib/access';
 import { prisma } from '@/lib/prisma';
 
 export async function GET(
@@ -9,11 +9,7 @@ export async function GET(
 ) {
   try {
     const { cardId } = await params;
-    const session = await getAuthSession();
-
-    if (!session) {
-      return new NextResponse('Unauthorized', { status: 401 });
-    }
+    await requireCardAccess(cardId);
 
     const card = await prisma.card.findUnique({
       where: { id: cardId },
@@ -23,12 +19,11 @@ export async function GET(
       },
     });
 
-    if (!card) {
-      return new NextResponse('Card not found', { status: 404 });
-    }
-
     return NextResponse.json(card);
   } catch (error) {
+    if (error instanceof AccessError) {
+      return new NextResponse(error.message, { status: 404 });
+    }
     console.error('Error in GET /api/card/[cardId]:', error);
     return new NextResponse('Internal server error', { status: 500 });
   }
